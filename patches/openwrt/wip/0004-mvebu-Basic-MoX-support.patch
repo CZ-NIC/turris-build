@@ -1,4 +1,4 @@
-From 6fac8cb130087b61496d7662bd7f802580b46d5b Mon Sep 17 00:00:00 2001
+From 94e43988cd50595b556433a10924dc155326b461 Mon Sep 17 00:00:00 2001
 From: Michal Hrusecky <Michal@Hrusecky.net>
 Date: Wed, 7 Mar 2018 17:10:32 +0100
 Subject: [PATCH] mvebu: Basic MoX support
@@ -50,13 +50,17 @@ Signed-off-by: Karel Kočí <karel.koci@nic.cz>
  ...to-inside-secure-hmac-sha256-support.patch | 174 ++++
  ...to-inside-secure-hmac-sha224-support.patch | 110 +++
  ...arvell-armada-37xx-add-a-crypto-node.patch |  42 +
+ ...-sfp-display-SFP-module-information.patch} |   3 +
  ...0038-net-mvneta-tx-queue-workaround.patch} |  17 +-
+ ...90039-net-mvneta-convert-to-phylink.patch} | 256 ++---
  ...0-net-mvneta-hack-fix-phy_interface.patch} |  11 +-
  ...e-MVNETA_CAUSE_PSC_SYNC_CHANGE-inte.patch} |  18 +-
  ...a-add-module-EEPROM-reading-support.patch} |  13 +-
  ...d-phy-remove-fixed_phy_update_state.patch} |  17 +-
  ...eprom-ethtool-access-into-netdev-co.patch} |  38 +-
  ...p-use-netdev-sfp_bus-for-start-stop.patch} |   9 +-
+ ...-marvell-10G-phy-support-to-use-SFP.patch} |  11 +-
+ ...tch => 90047-sfp-add-sfp-compatible.patch} |   7 +-
  ...armada-37xx-periph-cosmetic-changes.patch} |  21 +-
  ...37xx-periph-prepare-cpu-clk-to-be-u.patch} |  25 +-
  ...37xx-periph-add-DVFS-support-for-cp.patch} |  20 +-
@@ -140,7 +144,7 @@ Signed-off-by: Karel Kočí <karel.koci@nic.cz>
  ...37xx-periph-Fix-switching-CPU-rate-.patch} |   0
  ...37xx-periph-Fix-wrong-return-value-.patch} |   0
  ...37xx-periph-Remove-unused-var-num_p.patch} |   0
- 129 files changed, 14149 insertions(+), 176 deletions(-)
+ 133 files changed, 14295 insertions(+), 307 deletions(-)
  delete mode 100644 target/linux/mvebu/patches-4.14/527-PCI-aardvark-allow-to-specify-link-capability.patch
  create mode 100644 target/linux/mvebu/patches-4.14/90001-crypto-inside-secure-remove-null-check-before-kfree.patch
  create mode 100644 target/linux/mvebu/patches-4.14/90002-crypto-inside-secure-do-not-use-areq-result-for-part.patch
@@ -178,13 +182,17 @@ Signed-off-by: Karel Kočí <karel.koci@nic.cz>
  create mode 100644 target/linux/mvebu/patches-4.14/90034-crypto-inside-secure-hmac-sha256-support.patch
  create mode 100644 target/linux/mvebu/patches-4.14/90035-crypto-inside-secure-hmac-sha224-support.patch
  create mode 100644 target/linux/mvebu/patches-4.14/90036-arm64-dts-marvell-armada-37xx-add-a-crypto-node.patch
+ rename target/linux/mvebu/patches-4.14/{402-sfp-display-SFP-module-information.patch => 90037-sfp-display-SFP-module-information.patch} (99%)
  rename target/linux/mvebu/patches-4.14/{300-mvneta-tx-queue-workaround.patch => 90038-net-mvneta-tx-queue-workaround.patch} (64%)
+ rename target/linux/mvebu/patches-4.14/{403-net-mvneta-convert-to-phylink.patch => 90039-net-mvneta-convert-to-phylink.patch} (92%)
  rename target/linux/mvebu/patches-4.14/{404-net-mvneta-hack-fix-phy_interface.patch => 90040-net-mvneta-hack-fix-phy_interface.patch} (65%)
  rename target/linux/mvebu/patches-4.14/{405-net-mvneta-disable-MVNETA_CAUSE_PSC_SYNC_CHANGE-inte.patch => 90041-net-mvneta-disable-MVNETA_CAUSE_PSC_SYNC_CHANGE-inte.patch} (72%)
  rename target/linux/mvebu/patches-4.14/{406-net-mvneta-add-module-EEPROM-reading-support.patch => 90042-net-mvneta-add-module-EEPROM-reading-support.patch} (74%)
  rename target/linux/mvebu/patches-4.14/{407-phy-fixed-phy-remove-fixed_phy_update_state.patch => 90043-phy-fixed-phy-remove-fixed_phy_update_state.patch} (78%)
  rename target/linux/mvebu/patches-4.14/{408-sfp-move-module-eeprom-ethtool-access-into-netdev-co.patch => 90044-sfp-move-module-eeprom-ethtool-access-into-netdev-co.patch} (78%)
  rename target/linux/mvebu/patches-4.14/{409-sfp-use-netdev-sfp_bus-for-start-stop.patch => 90045-sfp-use-netdev-sfp_bus-for-start-stop.patch} (79%)
+ rename target/linux/mvebu/patches-4.14/{410-sfp-hack-allow-marvell-10G-phy-support-to-use-SFP.patch => 90046-sfp-hack-allow-marvell-10G-phy-support-to-use-SFP.patch} (93%)
+ rename target/linux/mvebu/patches-4.14/{411-sfp-add-sfp-compatible.patch => 90047-sfp-add-sfp-compatible.patch} (84%)
  rename target/linux/mvebu/patches-4.14/{503-clk-mvebu-armada-37xx-periph-cosmetic-changes.patch => 90048-clk-mvebu-armada-37xx-periph-cosmetic-changes.patch} (73%)
  rename target/linux/mvebu/patches-4.14/{504-clk-mvebu-armada-37xx-periph-prepare-cpu-clk-to-be-u.patch => 90049-clk-mvebu-armada-37xx-periph-prepare-cpu-clk-to-be-u.patch} (85%)
  rename target/linux/mvebu/patches-4.14/{505-clk-mvebu-armada-37xx-periph-add-DVFS-support-for-cp.patch => 90050-clk-mvebu-armada-37xx-periph-add-DVFS-support-for-cp.patch} (93%)
@@ -4164,6 +4172,20 @@ index 0000000..4d36ec8
 +-- 
 +2.21.0
 +
+diff --git a/target/linux/mvebu/patches-4.14/402-sfp-display-SFP-module-information.patch b/target/linux/mvebu/patches-4.14/90037-sfp-display-SFP-module-information.patch
+similarity index 99%
+rename from target/linux/mvebu/patches-4.14/402-sfp-display-SFP-module-information.patch
+rename to target/linux/mvebu/patches-4.14/90037-sfp-display-SFP-module-information.patch
+index ccc9896..ead2977 100644
+--- a/target/linux/mvebu/patches-4.14/402-sfp-display-SFP-module-information.patch
++++ b/target/linux/mvebu/patches-4.14/90037-sfp-display-SFP-module-information.patch
+@@ -288,3 +288,6 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+  
+  	/* We only support SFP modules, not the legacy GBIC modules. */
+  	if (sfp->id.base.phys_id != SFP_PHYS_ID_SFP ||
++-- 
++2.21.0
++
 diff --git a/target/linux/mvebu/patches-4.14/300-mvneta-tx-queue-workaround.patch b/target/linux/mvebu/patches-4.14/90038-net-mvneta-tx-queue-workaround.patch
 similarity index 64%
 rename from target/linux/mvebu/patches-4.14/300-mvneta-tx-queue-workaround.patch
@@ -4209,6 +4231,590 @@ index f21f808..e942485 100644
   };
   
   static const struct ethtool_ops mvneta_eth_tool_ops = {
++-- 
++2.21.0
++
+diff --git a/target/linux/mvebu/patches-4.14/403-net-mvneta-convert-to-phylink.patch b/target/linux/mvebu/patches-4.14/90039-net-mvneta-convert-to-phylink.patch
+similarity index 92%
+rename from target/linux/mvebu/patches-4.14/403-net-mvneta-convert-to-phylink.patch
+rename to target/linux/mvebu/patches-4.14/90039-net-mvneta-convert-to-phylink.patch
+index 577317a..850d3be 100644
+--- a/target/linux/mvebu/patches-4.14/403-net-mvneta-convert-to-phylink.patch
++++ b/target/linux/mvebu/patches-4.14/90039-net-mvneta-convert-to-phylink.patch
+@@ -1,7 +1,7 @@
+-From 36f29e6cf8071fed3854d9825217ed2a3c83b990 Mon Sep 17 00:00:00 2001
++From 454c1d28e56bfe0bd2937a3c6ab01ba5401d24f2 Mon Sep 17 00:00:00 2001
+ From: Russell King <rmk+kernel@arm.linux.org.uk>
+ Date: Wed, 16 Sep 2015 21:27:10 +0100
+-Subject: net: mvneta: convert to phylink
++Subject: [PATCH 039/126] net: mvneta: convert to phylink
+ 
+ Convert mvneta to use phylink, which models the MAC to PHY link in
+ a generic, reusable form.
+@@ -11,9 +11,11 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+ - remove unused sync status
+ ---
+  drivers/net/ethernet/marvell/Kconfig  |   2 +-
+- drivers/net/ethernet/marvell/mvneta.c | 594 ++++++++++++++++++++--------------
+- 2 files changed, 349 insertions(+), 247 deletions(-)
++ drivers/net/ethernet/marvell/mvneta.c | 598 +++++++++++++++-----------
++ 2 files changed, 349 insertions(+), 251 deletions(-)
+ 
++diff --git a/drivers/net/ethernet/marvell/Kconfig b/drivers/net/ethernet/marvell/Kconfig
++index da6fb825afea..ebe5c9148935 100644
+ --- a/drivers/net/ethernet/marvell/Kconfig
+ +++ b/drivers/net/ethernet/marvell/Kconfig
+ @@ -60,7 +60,7 @@ config MVNETA
+@@ -25,6 +27,8 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+  	---help---
+  	  This driver supports the network interface units in the
+  	  Marvell ARMADA XP, ARMADA 370, ARMADA 38x and
++diff --git a/drivers/net/ethernet/marvell/mvneta.c b/drivers/net/ethernet/marvell/mvneta.c
++index 0cf505c10c03..5c00869252fa 100644
+ --- a/drivers/net/ethernet/marvell/mvneta.c
+ +++ b/drivers/net/ethernet/marvell/mvneta.c
+ @@ -28,7 +28,7 @@
+@@ -97,7 +101,7 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+  
+  static const struct mvneta_statistic mvneta_statistics[] = {
+  	{ 0x3000, T_REG_64, "good_octets_received", },
+-@@ -355,6 +374,7 @@ static const struct mvneta_statistic mvn
++@@ -355,6 +374,7 @@ static const struct mvneta_statistic mvneta_statistics[] = {
+  	{ 0x304c, T_REG_32, "broadcast_frames_sent", },
+  	{ 0x3054, T_REG_32, "fc_sent", },
+  	{ 0x300c, T_REG_32, "internal_mac_transmit_err", },
+@@ -132,7 +136,7 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+  	u64 ethtool_stats[ARRAY_SIZE(mvneta_statistics)];
+  
+  	u32 indir[MVNETA_RSS_LU_TABLE_SIZE];
+-@@ -1215,10 +1234,6 @@ static void mvneta_port_disable(struct m
++@@ -1215,10 +1234,6 @@ static void mvneta_port_disable(struct mvneta_port *pp)
+  	val &= ~MVNETA_GMAC0_PORT_ENABLE;
+  	mvreg_write(pp, MVNETA_GMAC_CTRL_0, val);
+  
+@@ -143,7 +147,7 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+  	udelay(200);
+  }
+  
+-@@ -1278,44 +1293,6 @@ static void mvneta_set_other_mcast_table
++@@ -1278,44 +1293,6 @@ static void mvneta_set_other_mcast_table(struct mvneta_port *pp, int queue)
+  		mvreg_write(pp, MVNETA_DA_FILT_OTH_MCAST + offset, val);
+  }
+  
+@@ -188,7 +192,7 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+  static void mvneta_percpu_unmask_interrupt(void *arg)
+  {
+  	struct mvneta_port *pp = arg;
+-@@ -1468,7 +1445,6 @@ static void mvneta_defaults_set(struct m
++@@ -1468,7 +1445,6 @@ static void mvneta_defaults_set(struct mvneta_port *pp)
+  	val &= ~MVNETA_PHY_POLLING_ENABLE;
+  	mvreg_write(pp, MVNETA_UNIT_CONTROL, val);
+  
+@@ -196,7 +200,7 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+  	mvneta_set_ucast_table(pp, -1);
+  	mvneta_set_special_mcast_table(pp, -1);
+  	mvneta_set_other_mcast_table(pp, -1);
+-@@ -2693,26 +2669,11 @@ static irqreturn_t mvneta_percpu_isr(int
++@@ -2693,26 +2669,11 @@ static irqreturn_t mvneta_percpu_isr(int irq, void *dev_id)
+  	return IRQ_HANDLED;
+  }
+  
+@@ -225,7 +229,7 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+  }
+  
+  /* NAPI handler
+-@@ -2728,7 +2689,6 @@ static int mvneta_poll(struct napi_struc
++@@ -2728,7 +2689,6 @@ static int mvneta_poll(struct napi_struct *napi, int budget)
+  	u32 cause_rx_tx;
+  	int rx_queue;
+  	struct mvneta_port *pp = netdev_priv(napi->dev);
+@@ -233,7 +237,7 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+  	struct mvneta_pcpu_port *port = this_cpu_ptr(pp->ports);
+  
+  	if (!netif_running(pp->dev)) {
+-@@ -2742,12 +2702,11 @@ static int mvneta_poll(struct napi_struc
++@@ -2742,12 +2702,11 @@ static int mvneta_poll(struct napi_struct *napi, int budget)
+  		u32 cause_misc = mvreg_read(pp, MVNETA_INTR_MISC_CAUSE);
+  
+  		mvreg_write(pp, MVNETA_INTR_MISC_CAUSE, 0);
+@@ -251,7 +255,7 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+  	}
+  
+  	/* Release Tx descriptors */
+-@@ -3061,7 +3020,6 @@ static int mvneta_setup_txqs(struct mvne
++@@ -3061,7 +3020,6 @@ static int mvneta_setup_txqs(struct mvneta_port *pp)
+  static void mvneta_start_dev(struct mvneta_port *pp)
+  {
+  	int cpu;
+@@ -259,7 +263,7 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+  
+  	mvneta_max_rx_size_set(pp, pp->pkt_size);
+  	mvneta_txq_max_tx_size_set(pp, pp->pkt_size);
+-@@ -3089,16 +3047,15 @@ static void mvneta_start_dev(struct mvne
++@@ -3089,16 +3047,15 @@ static void mvneta_start_dev(struct mvneta_port *pp)
+  		    MVNETA_CAUSE_LINK_CHANGE |
+  		    MVNETA_CAUSE_PSC_SYNC_CHANGE);
+  
+@@ -278,7 +282,7 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+  
+  	if (!pp->neta_armada3700) {
+  		for_each_online_cpu(cpu) {
+-@@ -3251,103 +3208,232 @@ static int mvneta_set_mac_addr(struct ne
++@@ -3251,103 +3208,232 @@ static int mvneta_set_mac_addr(struct net_device *dev, void *addr)
+  	return 0;
+  }
+  
+@@ -324,22 +328,12 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+ -		if ((pp->speed != phydev->speed) ||
+ -		    (pp->duplex != phydev->duplex)) {
+ -			u32 val;
+--
+++	gmac_stat = mvreg_read(pp, MVNETA_GMAC_STATUS);
++ 
+ -			val = mvreg_read(pp, MVNETA_GMAC_AUTONEG_CONFIG);
+ -			val &= ~(MVNETA_GMAC_CONFIG_MII_SPEED |
+ -				 MVNETA_GMAC_CONFIG_GMII_SPEED |
+ -				 MVNETA_GMAC_CONFIG_FULL_DUPLEX);
+--
+--			if (phydev->duplex)
+--				val |= MVNETA_GMAC_CONFIG_FULL_DUPLEX;
+--
+--			if (phydev->speed == SPEED_1000)
+--				val |= MVNETA_GMAC_CONFIG_GMII_SPEED;
+--			else if (phydev->speed == SPEED_100)
+--				val |= MVNETA_GMAC_CONFIG_MII_SPEED;
+-+	gmac_stat = mvreg_read(pp, MVNETA_GMAC_STATUS);
+- 
+--			mvreg_write(pp, MVNETA_GMAC_AUTONEG_CONFIG, val);
+ +	if (gmac_stat & MVNETA_GMAC_SPEED_1000)
+ +		state->speed = SPEED_1000;
+ +	else if (gmac_stat & MVNETA_GMAC_SPEED_100)
+@@ -347,33 +341,48 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+ +	else
+ +		state->speed = SPEED_10;
+  
+--			pp->duplex = phydev->duplex;
+--			pp->speed  = phydev->speed;
+--		}
++-			if (phydev->duplex)
++-				val |= MVNETA_GMAC_CONFIG_FULL_DUPLEX;
+ +	state->an_complete = !!(gmac_stat & MVNETA_GMAC_AN_COMPLETE);
+ +	state->link = !!(gmac_stat & MVNETA_GMAC_LINK_UP);
+ +	state->duplex = !!(gmac_stat & MVNETA_GMAC_FULL_DUPLEX);
+-+
++ 
++-			if (phydev->speed == SPEED_1000)
++-				val |= MVNETA_GMAC_CONFIG_GMII_SPEED;
++-			else if (phydev->speed == SPEED_100)
++-				val |= MVNETA_GMAC_CONFIG_MII_SPEED;
+ +	state->pause = 0;
+ +	if (gmac_stat & MVNETA_GMAC_RX_FLOW_CTRL_ENABLE)
+ +		state->pause |= MLO_PAUSE_RX;
+ +	if (gmac_stat & MVNETA_GMAC_TX_FLOW_CTRL_ENABLE)
+ +		state->pause |= MLO_PAUSE_TX;
+-+
++ 
++-			mvreg_write(pp, MVNETA_GMAC_AUTONEG_CONFIG, val);
+ +	return 1;
+ +}
+-+
++ 
++-			pp->duplex = phydev->duplex;
++-			pp->speed  = phydev->speed;
++-		}
++-	}
+ +static void mvneta_mac_an_restart(struct net_device *ndev)
+ +{
+ +	struct mvneta_port *pp = netdev_priv(ndev);
+ +	u32 gmac_an = mvreg_read(pp, MVNETA_GMAC_AUTONEG_CONFIG);
+-+
++ 
++-	if (phydev->link != pp->link) {
++-		if (!phydev->link) {
++-			pp->duplex = -1;
++-			pp->speed = 0;
++-		}
+ +	mvreg_write(pp, MVNETA_GMAC_AUTONEG_CONFIG,
+ +		    gmac_an | MVNETA_GMAC_INBAND_RESTART_AN);
+ +	mvreg_write(pp, MVNETA_GMAC_AUTONEG_CONFIG,
+ +		    gmac_an & ~MVNETA_GMAC_INBAND_RESTART_AN);
+ +}
+-+
++ 
++-		pp->link = phydev->link;
++-		status_change = 1;
+ +static void mvneta_mac_config(struct net_device *ndev, unsigned int mode,
+ +	const struct phylink_link_state *state)
+ +{
+@@ -433,8 +442,31 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+ +
+ +		if (state->pause & MLO_PAUSE_AN && state->an_enabled)
+ +			new_an |= MVNETA_GMAC_AN_FLOW_CTRL_EN;
+-+	}
+-+
++ 	}
++ 
++-	if (status_change) {
++-		if (phydev->link) {
++-			if (!pp->use_inband_status) {
++-				u32 val = mvreg_read(pp,
++-						  MVNETA_GMAC_AUTONEG_CONFIG);
++-				val &= ~MVNETA_GMAC_FORCE_LINK_DOWN;
++-				val |= MVNETA_GMAC_FORCE_LINK_PASS;
++-				mvreg_write(pp, MVNETA_GMAC_AUTONEG_CONFIG,
++-					    val);
++-			}
++-			mvneta_port_up(pp);
++-		} else {
++-			if (!pp->use_inband_status) {
++-				u32 val = mvreg_read(pp,
++-						  MVNETA_GMAC_AUTONEG_CONFIG);
++-				val &= ~MVNETA_GMAC_FORCE_LINK_PASS;
++-				val |= MVNETA_GMAC_FORCE_LINK_DOWN;
++-				mvreg_write(pp, MVNETA_GMAC_AUTONEG_CONFIG,
++-					    val);
++-			}
++-			mvneta_port_down(pp);
++-		}
++-		phy_print_status(phydev);
+ +	/* Armada 370 documentation says we can only change the port mode
+ +	 * and in-band enable when the link is down, so force it down
+ +	 * while making these changes. We also do this for GMAC_CTRL2 */
+@@ -444,7 +476,7 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+ +		mvreg_write(pp, MVNETA_GMAC_AUTONEG_CONFIG,
+ +			    (gmac_an & ~MVNETA_GMAC_FORCE_LINK_PASS) |
+ +			    MVNETA_GMAC_FORCE_LINK_DOWN);
+-+	}
++ 	}
+ +
+ +	if (new_ctrl0 != gmac_ctrl0)
+ +		mvreg_write(pp, MVNETA_GMAC_CTRL_0, new_ctrl0);
+@@ -454,10 +486,13 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+ +		mvreg_write(pp, MVNETA_GMAC_CLOCK_DIVIDER, new_clk);
+ +	if (new_an != gmac_an)
+ +		mvreg_write(pp, MVNETA_GMAC_AUTONEG_CONFIG, new_an);
+-+}
+-+
++ }
++ 
++-static int mvneta_mdio_probe(struct mvneta_port *pp)
+ +static void mvneta_set_eee(struct mvneta_port *pp, bool enable)
+-+{
++ {
++-	struct phy_device *phy_dev;
++-	struct ethtool_wolinfo wol = { .cmd = ETHTOOL_GWOL };
+ +	u32 lpi_ctl1;
+ +
+ +	lpi_ctl1 = mvreg_read(pp, MVNETA_LPI_CTRL_1);
+@@ -472,7 +507,12 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+ +{
+ +	struct mvneta_port *pp = netdev_priv(ndev);
+ +	u32 val;
+-+
++ 
++-	phy_dev = of_phy_connect(pp->dev, pp->phy_node, mvneta_adjust_link, 0,
++-				 pp->phy_interface);
++-	if (!phy_dev) {
++-		netdev_err(pp->dev, "could not find the PHY\n");
++-		return -ENODEV;
+ +	mvneta_port_down(pp);
+ +
+ +	if (!phylink_autoneg_inband(mode)) {
+@@ -482,11 +522,8 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+ +		mvreg_write(pp, MVNETA_GMAC_AUTONEG_CONFIG, val);
+  	}
+  
+--	if (phydev->link != pp->link) {
+--		if (!phydev->link) {
+--			pp->duplex = -1;
+--			pp->speed = 0;
+--		}
++-	phy_ethtool_get_wol(phy_dev, &wol);
++-	device_set_wakeup_capable(&pp->dev->dev, !!wol.supported);
+ +	pp->eee_active = false;
+ +	mvneta_set_eee(pp, false);
+ +}
+@@ -497,46 +534,28 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+ +	struct mvneta_port *pp = netdev_priv(ndev);
+ +	u32 val;
+  
+--		pp->link = phydev->link;
+--		status_change = 1;
++-	phy_dev->supported &= PHY_GBIT_FEATURES;
++-	phy_dev->advertising = phy_dev->supported;
+ +	if (!phylink_autoneg_inband(mode)) {
+ +		val = mvreg_read(pp, MVNETA_GMAC_AUTONEG_CONFIG);
+ +		val &= ~MVNETA_GMAC_FORCE_LINK_DOWN;
+ +		val |= MVNETA_GMAC_FORCE_LINK_PASS;
+ +		mvreg_write(pp, MVNETA_GMAC_AUTONEG_CONFIG, val);
+- 	}
+++	}
+  
+--	if (status_change) {
+--		if (phydev->link) {
+--			if (!pp->use_inband_status) {
+--				u32 val = mvreg_read(pp,
+--						  MVNETA_GMAC_AUTONEG_CONFIG);
+--				val &= ~MVNETA_GMAC_FORCE_LINK_DOWN;
+--				val |= MVNETA_GMAC_FORCE_LINK_PASS;
+--				mvreg_write(pp, MVNETA_GMAC_AUTONEG_CONFIG,
+--					    val);
+--			}
+--			mvneta_port_up(pp);
+--		} else {
+--			if (!pp->use_inband_status) {
+--				u32 val = mvreg_read(pp,
+--						  MVNETA_GMAC_AUTONEG_CONFIG);
+--				val &= ~MVNETA_GMAC_FORCE_LINK_PASS;
+--				val |= MVNETA_GMAC_FORCE_LINK_DOWN;
+--				mvreg_write(pp, MVNETA_GMAC_AUTONEG_CONFIG,
+--					    val);
+--			}
+--			mvneta_port_down(pp);
+--		}
+--		phy_print_status(phydev);
++-	pp->link    = 0;
++-	pp->duplex  = 0;
++-	pp->speed   = 0;
+ +	mvneta_port_up(pp);
+-+
++ 
++-	return 0;
+ +	if (phy && pp->eee_enabled) {
+ +		pp->eee_active = phy_init_eee(phy, 0) >= 0;
+ +		mvneta_set_eee(pp, pp->eee_active && pp->tx_lpi_enabled);
+- 	}
+++	}
+  }
+  
++-static void mvneta_mdio_remove(struct mvneta_port *pp)
+ +static const struct phylink_mac_ops mvneta_phylink_ops = {
+ +	.validate = mvneta_validate,
+ +	.mac_link_state = mvneta_mac_link_state,
+@@ -546,46 +565,28 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+ +	.mac_link_up = mvneta_mac_link_up,
+ +};
+ +
+- static int mvneta_mdio_probe(struct mvneta_port *pp)
+++static int mvneta_mdio_probe(struct mvneta_port *pp)
+  {
+--	struct phy_device *phy_dev;
+- 	struct ethtool_wolinfo wol = { .cmd = ETHTOOL_GWOL };
++-	struct net_device *ndev = pp->dev;
+++	struct ethtool_wolinfo wol = { .cmd = ETHTOOL_GWOL };
+ +	int err = phylink_of_phy_connect(pp->phylink, pp->dn);
+ +	if (err)
+ +		netdev_err(pp->dev, "could not attach PHY\n");
+  
+--	phy_dev = of_phy_connect(pp->dev, pp->phy_node, mvneta_adjust_link, 0,
+--				 pp->phy_interface);
+--	if (!phy_dev) {
+--		netdev_err(pp->dev, "could not find the PHY\n");
+--		return -ENODEV;
+--	}
+--
+--	phy_ethtool_get_wol(phy_dev, &wol);
++-	phy_disconnect(ndev->phydev);
+ +	phylink_ethtool_get_wol(pp->phylink, &wol);
+- 	device_set_wakeup_capable(&pp->dev->dev, !!wol.supported);
+- 
+--	phy_dev->supported &= PHY_GBIT_FEATURES;
+--	phy_dev->advertising = phy_dev->supported;
+--
+--	pp->link    = 0;
+--	pp->duplex  = 0;
+--	pp->speed   = 0;
+--
+--	return 0;
+++	device_set_wakeup_capable(&pp->dev->dev, !!wol.supported);
+++
+ +	return err;
+- }
+- 
+- static void mvneta_mdio_remove(struct mvneta_port *pp)
+- {
+--	struct net_device *ndev = pp->dev;
+--
+--	phy_disconnect(ndev->phydev);
+++}
+++
+++static void mvneta_mdio_remove(struct mvneta_port *pp)
+++{
+ +	phylink_disconnect_phy(pp->phylink);
+  }
+  
+  /* Electing a CPU must be done in an atomic way: it should be done
+-@@ -3626,10 +3712,9 @@ static int mvneta_stop(struct net_device
++@@ -3626,10 +3712,9 @@ static int mvneta_stop(struct net_device *dev)
+  
+  static int mvneta_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
+  {
+@@ -598,12 +599,12 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+  }
+  
+  /* Ethtool methods */
+-@@ -3640,44 +3725,25 @@ mvneta_ethtool_set_link_ksettings(struct
++@@ -3640,44 +3725,25 @@ mvneta_ethtool_set_link_ksettings(struct net_device *ndev,
+  				  const struct ethtool_link_ksettings *cmd)
+  {
+  	struct mvneta_port *pp = netdev_priv(ndev);
+ -	struct phy_device *phydev = ndev->phydev;
+- 
++-
+ -	if (!phydev)
+ -		return -ENODEV;
+ -
+@@ -611,7 +612,7 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+ -		u32 val;
+ -
+ -		mvneta_set_autoneg(pp, cmd->base.autoneg == AUTONEG_ENABLE);
+--
++ 
+ -		if (cmd->base.autoneg == AUTONEG_DISABLE) {
+ -			val = mvreg_read(pp, MVNETA_GMAC_AUTONEG_CONFIG);
+ -			val &= ~(MVNETA_GMAC_CONFIG_MII_SPEED |
+@@ -620,13 +621,16 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+ -
+ -			if (phydev->duplex)
+ -				val |= MVNETA_GMAC_CONFIG_FULL_DUPLEX;
+-+	return phylink_ethtool_ksettings_set(pp->phylink, cmd);
+-+}
+- 
++-
+ -			if (phydev->speed == SPEED_1000)
+ -				val |= MVNETA_GMAC_CONFIG_GMII_SPEED;
+ -			else if (phydev->speed == SPEED_100)
+ -				val |= MVNETA_GMAC_CONFIG_MII_SPEED;
+++	return phylink_ethtool_ksettings_set(pp->phylink, cmd);
+++}
++ 
++-			mvreg_write(pp, MVNETA_GMAC_AUTONEG_CONFIG, val);
++-		}
+ +/* Get link ksettings for ethtools */
+ +static int
+ +mvneta_ethtool_get_link_ksettings(struct net_device *ndev,
+@@ -634,15 +638,12 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+ +{
+ +	struct mvneta_port *pp = netdev_priv(ndev);
+  
+--			mvreg_write(pp, MVNETA_GMAC_AUTONEG_CONFIG, val);
+--		}
+-+	return phylink_ethtool_ksettings_get(pp->phylink, cmd);
+-+}
+- 
+ -		pp->use_inband_status = (cmd->base.autoneg == AUTONEG_ENABLE);
+ -		netdev_info(pp->dev, "autoneg status set to %i\n",
+ -			    pp->use_inband_status);
+--
+++	return phylink_ethtool_ksettings_get(pp->phylink, cmd);
+++}
++ 
+ -		if (netif_running(ndev)) {
+ -			mvneta_port_down(pp);
+ -			mvneta_port_up(pp);
+@@ -657,7 +658,7 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+  }
+  
+  /* Set interrupt coalescing for ethtools */
+-@@ -3769,6 +3835,22 @@ static int mvneta_ethtool_set_ringparam(
++@@ -3769,6 +3835,22 @@ static int mvneta_ethtool_set_ringparam(struct net_device *dev,
+  	return 0;
+  }
+  
+@@ -680,7 +681,7 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+  static void mvneta_ethtool_get_strings(struct net_device *netdev, u32 sset,
+  				       u8 *data)
+  {
+-@@ -3785,26 +3867,35 @@ static void mvneta_ethtool_update_stats(
++@@ -3785,26 +3867,35 @@ static void mvneta_ethtool_update_stats(struct mvneta_port *pp)
+  {
+  	const struct mvneta_statistic *s;
+  	void __iomem *base = pp->base;
+@@ -721,7 +722,7 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+  	}
+  }
+  
+-@@ -3939,28 +4030,65 @@ static int mvneta_ethtool_get_rxfh(struc
++@@ -3939,28 +4030,65 @@ static int mvneta_ethtool_get_rxfh(struct net_device *dev, u32 *indir, u8 *key,
+  static void mvneta_ethtool_get_wol(struct net_device *dev,
+  				   struct ethtool_wolinfo *wol)
+  {
+@@ -795,7 +796,7 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+  static u16 mvneta_select_queue(struct net_device *dev, struct sk_buff *skb,
+  			       void *accel_priv,
+  			       select_queue_fallback_t fallback)
+-@@ -3984,13 +4112,15 @@ static const struct net_device_ops mvnet
++@@ -3984,13 +4112,15 @@ static const struct net_device_ops mvneta_netdev_ops = {
+  };
+  
+  static const struct ethtool_ops mvneta_eth_tool_ops = {
+@@ -812,7 +813,7 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+  	.get_strings	= mvneta_ethtool_get_strings,
+  	.get_ethtool_stats = mvneta_ethtool_get_stats,
+  	.get_sset_count	= mvneta_ethtool_get_sset_count,
+-@@ -3998,10 +4128,12 @@ static const struct ethtool_ops mvneta_e
++@@ -3998,10 +4128,12 @@ static const struct ethtool_ops mvneta_eth_tool_ops = {
+  	.get_rxnfc	= mvneta_ethtool_get_rxnfc,
+  	.get_rxfh	= mvneta_ethtool_get_rxfh,
+  	.set_rxfh	= mvneta_ethtool_set_rxfh,
+@@ -826,7 +827,7 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+  };
+  
+  /* Initialize hw */
+-@@ -4146,14 +4278,13 @@ static int mvneta_probe(struct platform_
++@@ -4146,14 +4278,13 @@ static int mvneta_probe(struct platform_device *pdev)
+  {
+  	struct resource *res;
+  	struct device_node *dn = pdev->dev.of_node;
+@@ -842,7 +843,7 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+  	int tx_csum_limit;
+  	int phy_mode;
+  	int err;
+-@@ -4169,31 +4300,11 @@ static int mvneta_probe(struct platform_
++@@ -4169,31 +4300,11 @@ static int mvneta_probe(struct platform_device *pdev)
+  		goto err_free_netdev;
+  	}
+  
+@@ -875,7 +876,7 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+  	}
+  
+  	dev->tx_queue_len = MVNETA_MAX_TXD;
+-@@ -4204,12 +4315,7 @@ static int mvneta_probe(struct platform_
++@@ -4204,12 +4315,7 @@ static int mvneta_probe(struct platform_device *pdev)
+  
+  	pp = netdev_priv(dev);
+  	spin_lock_init(&pp->lock);
+@@ -889,7 +890,7 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+  
+  	pp->rxq_def = rxq_def;
+  
+-@@ -4231,7 +4337,7 @@ static int mvneta_probe(struct platform_
++@@ -4231,7 +4337,7 @@ static int mvneta_probe(struct platform_device *pdev)
+  		pp->clk = devm_clk_get(&pdev->dev, NULL);
+  	if (IS_ERR(pp->clk)) {
+  		err = PTR_ERR(pp->clk);
+@@ -898,7 +899,7 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+  	}
+  
+  	clk_prepare_enable(pp->clk);
+-@@ -4357,6 +4463,14 @@ static int mvneta_probe(struct platform_
++@@ -4357,6 +4463,14 @@ static int mvneta_probe(struct platform_device *pdev)
+  	/* 9676 == 9700 - 20 and rounding to 8 */
+  	dev->max_mtu = 9676;
+  
+@@ -913,7 +914,7 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+  	err = register_netdev(dev);
+  	if (err < 0) {
+  		dev_err(&pdev->dev, "failed to register\n");
+-@@ -4368,14 +4482,6 @@ static int mvneta_probe(struct platform_
++@@ -4368,14 +4482,6 @@ static int mvneta_probe(struct platform_device *pdev)
+  
+  	platform_set_drvdata(pdev, pp->dev);
+  
+@@ -977,3 +978,6 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+  	netif_device_attach(dev);
+  	if (netif_running(dev)) {
+  		mvneta_open(dev);
 +-- 
 +2.21.0
 +
@@ -4579,6 +5185,67 @@ index 4db3867..81378be 100644
   
   	phylink_run_resolve_and_disable(pl, PHYLINK_DISABLE_STOPPED);
   }
++-- 
++2.21.0
++
+diff --git a/target/linux/mvebu/patches-4.14/410-sfp-hack-allow-marvell-10G-phy-support-to-use-SFP.patch b/target/linux/mvebu/patches-4.14/90046-sfp-hack-allow-marvell-10G-phy-support-to-use-SFP.patch
+similarity index 93%
+rename from target/linux/mvebu/patches-4.14/410-sfp-hack-allow-marvell-10G-phy-support-to-use-SFP.patch
+rename to target/linux/mvebu/patches-4.14/90046-sfp-hack-allow-marvell-10G-phy-support-to-use-SFP.patch
+index d6e5fbf..79ed78a 100644
+--- a/target/linux/mvebu/patches-4.14/410-sfp-hack-allow-marvell-10G-phy-support-to-use-SFP.patch
++++ b/target/linux/mvebu/patches-4.14/90046-sfp-hack-allow-marvell-10G-phy-support-to-use-SFP.patch
+@@ -1,7 +1,7 @@
+-From 4a4aca08b11501cb1b2c509113bbb65eb66a1f45 Mon Sep 17 00:00:00 2001
++From e0d2599b145950f49d52e0d860492308afcba520 Mon Sep 17 00:00:00 2001
+ From: Russell King <rmk+kernel@armlinux.org.uk>
+ Date: Fri, 14 Apr 2017 14:21:25 +0100
+-Subject: sfp: hack: allow marvell 10G phy support to use SFP
++Subject: [PATCH 046/126] sfp: hack: allow marvell 10G phy support to use SFP
+ 
+ Allow the Marvell 10G PHY to register with the SFP bus, so that SFP+
+ cages can work.  This bypasses phylink, meaning that socket status
+@@ -10,9 +10,11 @@ signal must be commented out in DT for this to work...
+ 
+ Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
+ ---
+- drivers/net/phy/marvell10g.c | 54 +++++++++++++++++++++++++++++++++++++++++++-
++ drivers/net/phy/marvell10g.c | 54 +++++++++++++++++++++++++++++++++++-
+  1 file changed, 53 insertions(+), 1 deletion(-)
+ 
++diff --git a/drivers/net/phy/marvell10g.c b/drivers/net/phy/marvell10g.c
++index 21b3f36e023a..ccdddda0eb7d 100644
+ --- a/drivers/net/phy/marvell10g.c
+ +++ b/drivers/net/phy/marvell10g.c
+ @@ -15,8 +15,10 @@
+@@ -130,3 +132,6 @@ Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
+  	},
+  };
+  
++-- 
++2.21.0
++
+diff --git a/target/linux/mvebu/patches-4.14/411-sfp-add-sfp-compatible.patch b/target/linux/mvebu/patches-4.14/90047-sfp-add-sfp-compatible.patch
+similarity index 84%
+rename from target/linux/mvebu/patches-4.14/411-sfp-add-sfp-compatible.patch
+rename to target/linux/mvebu/patches-4.14/90047-sfp-add-sfp-compatible.patch
+index d2e7d22..19d2a21 100644
+--- a/target/linux/mvebu/patches-4.14/411-sfp-add-sfp-compatible.patch
++++ b/target/linux/mvebu/patches-4.14/90047-sfp-add-sfp-compatible.patch
+@@ -1,7 +1,7 @@
+-From 3344f73509a34d2124b716efc79cd9787773018b Mon Sep 17 00:00:00 2001
++From b369e455a4fbe649dd138709396c38fea3feb86d Mon Sep 17 00:00:00 2001
+ From: Russell King <rmk+kernel@armlinux.org.uk>
+ Date: Fri, 14 Apr 2017 20:17:13 +0100
+-Subject: sfp: add sfp+ compatible
++Subject: [PATCH 047/126] sfp: add sfp+ compatible
+ 
+ Add a compatible for SFP+ cages.  SFP+ cages are backwards compatible,
+ but the ethernet device behind them may not support the slower speeds
+@@ -22,3 +22,6 @@ Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
+  	{ },
+  };
+  MODULE_DEVICE_TABLE(of, sfp_of_match);
 +-- 
 +2.21.0
 +
