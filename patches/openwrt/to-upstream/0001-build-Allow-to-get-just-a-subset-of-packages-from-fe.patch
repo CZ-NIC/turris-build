@@ -1,4 +1,4 @@
-From 94ab2cc56aa8e3e6bfa93cd8997d7d0392f16134 Mon Sep 17 00:00:00 2001
+From 2cf58b53674137d8cb9dd040a7bc31ac313cc840 Mon Sep 17 00:00:00 2001
 From: Michal Hrusecky <michal.hrusecky@nic.cz>
 Date: Mon, 23 Oct 2017 12:56:44 +0200
 Subject: [PATCH] build: Allow to get just a subset of packages from feeds
@@ -13,28 +13,28 @@ Signed-off-by: Michal Hrusecky <michal.hrusecky@nic.cz>
  1 file changed, 15 insertions(+), 9 deletions(-)
 
 diff --git a/scripts/feeds b/scripts/feeds
-index 437af03..173ab6f 100755
+index a4dfd9e..6b2614a 100755
 --- a/scripts/feeds
 +++ b/scripts/feeds
-@@ -52,7 +52,7 @@ sub parse_config() {
- 		chomp;
+@@ -54,7 +54,7 @@ sub parse_file($$) {
  		s/#.+$//;
+ 		$line++;
  		next unless /\S/;
 -		my @line = split /\s+/, $_, 3;
 +		my @line = split /\s+/, $_, 4;
  		my @src;
- 		$line++;
  
-@@ -65,7 +65,7 @@ sub parse_config() {
- 		$name{$line[1]} and die "Duplicate feed name '$line[1]', line: $line\n";
- 		$name{$line[1]} = 1;
+ 		my $valid = 1;
+@@ -73,7 +73,7 @@ sub parse_file($$) {
+ 			next;
+ 		}
  
 -		push @feeds, [$line[0], $line[1], \@src];
 +		push @feeds, [$line[0], $line[1], \@src, $line[3]];
  	}
- 	close FEEDS;
- }
-@@ -167,12 +167,13 @@ my %update_method = (
+ 	close $fh;
+ 	return 1;
+@@ -187,12 +187,13 @@ my %update_method = (
  # src-git: pull broken
  # src-cpy: broken if `basename $src` != $name
  
@@ -49,7 +49,7 @@ index 437af03..173ab6f 100755
  
  	my $m = $update_method{$type};
  	my $localpath = "./feeds/$name";
-@@ -199,6 +200,10 @@ sub update_feed_via($$$$$) {
+@@ -219,6 +220,10 @@ sub update_feed_via($$$$$) {
  		}
  		system("cd '$safepath'; $update_cmd") == 0 or return 1;
  	}
@@ -60,7 +60,7 @@ index 437af03..173ab6f 100755
  	if ($m->{'post_update'}) {
  		my $cmd = $m->{'post_update'};
  		system("cd '$safepath'; $cmd") == 0 or return 1;
-@@ -721,13 +726,14 @@ sub uninstall {
+@@ -741,13 +746,14 @@ sub uninstall {
  	return 0;
  }
  
@@ -76,7 +76,7 @@ index 437af03..173ab6f 100755
  	my $force_relocate=update_location( $name, "@$src" );
  	my $rv=0;
  
-@@ -742,7 +748,7 @@ sub update_feed($$$$$)
+@@ -762,7 +768,7 @@ sub update_feed($$$$$)
  		my $failed = 1;
  		foreach my $feedsrc (@$src) {
  			warn "Updating feed '$name' from '$feedsrc' ...\n";
@@ -85,7 +85,7 @@ index 437af03..173ab6f 100755
  				if ($force_update) {
  					$rv=1;
  					$failed=0;
-@@ -794,17 +800,17 @@ sub update {
+@@ -814,17 +820,17 @@ sub update {
  
  	if ( ($#ARGV == -1) or $opts{a}) {
  		foreach my $feed (@feeds) {
@@ -108,5 +108,5 @@ index 437af03..173ab6f 100755
  		}
  	}
 -- 
-2.16.3
+2.22.0
 
