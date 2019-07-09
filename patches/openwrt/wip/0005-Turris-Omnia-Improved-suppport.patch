@@ -1,27 +1,31 @@
-From c9e1eb2c22ab4d47c2d27e31ef5b0d214e347e26 Mon Sep 17 00:00:00 2001
+From ff1bd28dbfd0e0e1dd93a0da2b46cfc1e2543073 Mon Sep 17 00:00:00 2001
 From: Michal Hrusecky <Michal@Hrusecky.net>
 Date: Fri, 22 Feb 2019 08:30:39 +0100
 Subject: [PATCH] Turris Omnia: Improved suppport
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
+Signed-off-by: Karel Kočí <karel.koci@nic.cz>
 ---
- ...nia-Add-separate-DTS-for-SFP-support.patch | 903 ++++++++++++++++++
+ ...nia-Add-separate-DTS-for-SFP-support.patch | 870 ++++++++++++++++++
  ...Omnia-second-ethernet-connection-to-.patch |  39 +
- .../8890-turris-omnia-led-driver.patch        | 323 +++++++
+ .../8890-turris-omnia-led-driver.patch        | 317 +++++++
  ...91-turris-omnia-custom-led-functions.patch | 269 ++++++
  ...8892-turris-omnia-enable-leds-in-dts.patch | 102 ++
- 5 files changed, 1636 insertions(+)
- create mode 100644 target/linux/mvebu/patches-4.14/8888-Turris-Omnia-Add-separate-DTS-for-SFP-support.patch
- create mode 100644 target/linux/mvebu/patches-4.14/8889-Reenable-Turris-Omnia-second-ethernet-connection-to-.patch
- create mode 100644 target/linux/mvebu/patches-4.14/8890-turris-omnia-led-driver.patch
- create mode 100644 target/linux/mvebu/patches-4.14/8891-turris-omnia-custom-led-functions.patch
- create mode 100644 target/linux/mvebu/patches-4.14/8892-turris-omnia-enable-leds-in-dts.patch
+ 5 files changed, 1597 insertions(+)
+ create mode 100644 target/linux/mvebu/patches-4.19/8888-Turris-Omnia-Add-separate-DTS-for-SFP-support.patch
+ create mode 100644 target/linux/mvebu/patches-4.19/8889-Reenable-Turris-Omnia-second-ethernet-connection-to-.patch
+ create mode 100644 target/linux/mvebu/patches-4.19/8890-turris-omnia-led-driver.patch
+ create mode 100644 target/linux/mvebu/patches-4.19/8891-turris-omnia-custom-led-functions.patch
+ create mode 100644 target/linux/mvebu/patches-4.19/8892-turris-omnia-enable-leds-in-dts.patch
 
-diff --git a/target/linux/mvebu/patches-4.14/8888-Turris-Omnia-Add-separate-DTS-for-SFP-support.patch b/target/linux/mvebu/patches-4.14/8888-Turris-Omnia-Add-separate-DTS-for-SFP-support.patch
+diff --git a/target/linux/mvebu/patches-4.19/8888-Turris-Omnia-Add-separate-DTS-for-SFP-support.patch b/target/linux/mvebu/patches-4.19/8888-Turris-Omnia-Add-separate-DTS-for-SFP-support.patch
 new file mode 100644
-index 0000000000..5b55b55c8f
+index 0000000..4f7190c
 --- /dev/null
-+++ b/target/linux/mvebu/patches-4.14/8888-Turris-Omnia-Add-separate-DTS-for-SFP-support.patch
-@@ -0,0 +1,903 @@
++++ b/target/linux/mvebu/patches-4.19/8888-Turris-Omnia-Add-separate-DTS-for-SFP-support.patch
+@@ -0,0 +1,870 @@
 +From bfc96ed32855077d2959f617aa285d1ec9fbb07d Mon Sep 17 00:00:00 2001
 +From: Tomas Hlavacek <tmshlvck@gmail.com>
 +Date: Sat, 11 Aug 2018 21:21:50 +0200
@@ -58,9 +62,9 @@ index 0000000000..5b55b55c8f
 +
 +--- a/arch/arm/boot/dts/Makefile
 ++++ b/arch/arm/boot/dts/Makefile
-+@@ -1029,7 +1029,8 @@ dtb-$(CONFIG_MACH_ARMADA_38X) += \
++@@ -1155,7 +1155,8 @@ dtb-$(CONFIG_MACH_ARMADA_38X) += \
++ 	armada-385-linksys-rango.dtb \
 + 	armada-385-linksys-shelby.dtb \
-+ 	armada-385-linksys-venom.dtb \
 + 	armada-385-synology-ds116.dtb \
 +-	armada-385-turris-omnia.dtb \
 ++	armada-385-turris-omnia-phy.dtb \
@@ -129,47 +133,14 @@ index 0000000000..5b55b55c8f
 ++};
 +--- a/arch/arm/boot/dts/armada-385-turris-omnia.dts
 ++++ /dev/null
-+@@ -1,392 +0,0 @@
++@@ -1,359 +0,0 @@
++-// SPDX-License-Identifier: (GPL-2.0 OR MIT)
 +-/*
 +- * Device Tree file for the Turris Omnia
 +- *
 +- * Copyright (C) 2016 Uwe Kleine-König <uwe@kleine-koenig.org>
 +- * Copyright (C) 2016 Tomas Hlavacek <tmshlvkc@gmail.com>
 +- *
-+- * This file is dual-licensed: you can use it either under the terms
-+- * of the GPL or the X11 license, at your option. Note that this dual
-+- * licensing only applies to this file, and not this project as a
-+- * whole.
-+- *
-+- *  a) This file is licensed under the terms of the GNU General Public
-+- *     License version 2.  This program is licensed "as is" without
-+- *     any warranty of any kind, whether express or implied.
-+- *
-+- * Or, alternatively,
-+- *
-+- *  b) Permission is hereby granted, free of charge, to any person
-+- *     obtaining a copy of this software and associated documentation
-+- *     files (the "Software"), to deal in the Software without
-+- *     restriction, including without limitation the rights to use,
-+- *     copy, modify, merge, publish, distribute, sublicense, and/or
-+- *     sell copies of the Software, and to permit persons to whom the
-+- *     Software is furnished to do so, subject to the following
-+- *     conditions:
-+- *
-+- *     The above copyright notice and this permission notice shall be
-+- *     included in all copies or substantial portions of the Software.
-+- *
-+- *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-+- *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-+- *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-+- *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-+- *     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-+- *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-+- *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-+- *     OTHER DEALINGS IN THE SOFTWARE.
-+- */
-+-
-+-/*
 +- * Schematic available at https://www.turris.cz/doc/_media/rtrom01-schema.pdf
 +- */
 +-
@@ -925,11 +896,11 @@ index 0000000000..5b55b55c8f
 ++	pinctrl-0 = <&uart1_pins>;
 ++	status = "okay";
 ++};
-diff --git a/target/linux/mvebu/patches-4.14/8889-Reenable-Turris-Omnia-second-ethernet-connection-to-.patch b/target/linux/mvebu/patches-4.14/8889-Reenable-Turris-Omnia-second-ethernet-connection-to-.patch
+diff --git a/target/linux/mvebu/patches-4.19/8889-Reenable-Turris-Omnia-second-ethernet-connection-to-.patch b/target/linux/mvebu/patches-4.19/8889-Reenable-Turris-Omnia-second-ethernet-connection-to-.patch
 new file mode 100644
-index 0000000000..fc7f13eafc
+index 0000000..fc7f13e
 --- /dev/null
-+++ b/target/linux/mvebu/patches-4.14/8889-Reenable-Turris-Omnia-second-ethernet-connection-to-.patch
++++ b/target/linux/mvebu/patches-4.19/8889-Reenable-Turris-Omnia-second-ethernet-connection-to-.patch
 @@ -0,0 +1,39 @@
 +From a7c04d8029e3f4c8b4e01b73502e885494132d8c Mon Sep 17 00:00:00 2001
 +From: =?UTF-8?q?Karel=20Ko=C4=8D=C3=AD?= <karel.koci@nic.cz>
@@ -970,12 +941,12 @@ index 0000000000..fc7f13eafc
 +-- 
 +2.21.0
 +
-diff --git a/target/linux/mvebu/patches-4.14/8890-turris-omnia-led-driver.patch b/target/linux/mvebu/patches-4.14/8890-turris-omnia-led-driver.patch
+diff --git a/target/linux/mvebu/patches-4.19/8890-turris-omnia-led-driver.patch b/target/linux/mvebu/patches-4.19/8890-turris-omnia-led-driver.patch
 new file mode 100644
-index 0000000000..477370d4b1
+index 0000000..9207290
 --- /dev/null
-+++ b/target/linux/mvebu/patches-4.14/8890-turris-omnia-led-driver.patch
-@@ -0,0 +1,323 @@
++++ b/target/linux/mvebu/patches-4.19/8890-turris-omnia-led-driver.patch
+@@ -0,0 +1,317 @@
 +From d906c53c7433b3f20f4210284ec9b174c91f24c8 Mon Sep 17 00:00:00 2001
 +From: Tomas Hlavacek <tmshlvck@gmail.com>
 +Date: Thu, 16 Jun 2016 17:44:22 +0200
@@ -1005,13 +976,11 @@ index 0000000000..477370d4b1
 + 3 files changed, 267 insertions(+)
 + create mode 100644 drivers/leds/leds-omnia.c
 +
-+Index: linux-4.14.101/drivers/leds/Kconfig
-+===================================================================
-+--- linux-4.14.101.orig/drivers/leds/Kconfig
-++++ linux-4.14.101/drivers/leds/Kconfig
-+@@ -630,6 +630,13 @@ config LEDS_IS31FL32XX
-+ 	  LED controllers. They are I2C devices with multiple constant-current
-+ 	  channels, each with independent 256-level PWM control.
++--- a/drivers/leds/Kconfig
+++++ b/drivers/leds/Kconfig
++@@ -681,6 +681,13 @@ config LEDS_SC27XX_BLTC
++ 	  This driver can also be built as a module. If so the module will be
++ 	  called leds-sc27xx-bltc.
 + 
 ++config LEDS_OMNIA
 ++	tristate "LED support for the Turris Omnia board"
@@ -1023,22 +992,18 @@ index 0000000000..477370d4b1
 + comment "LED driver for blink(1) USB RGB LED is under Special HID drivers (HID_THINGM)"
 + 
 + config LEDS_BLINKM
-+Index: linux-4.14.101/drivers/leds/Makefile
-+===================================================================
-+--- linux-4.14.101.orig/drivers/leds/Makefile
-++++ linux-4.14.101/drivers/leds/Makefile
-+@@ -73,6 +73,7 @@ obj-$(CONFIG_LEDS_PM8058)		+= leds-pm805
-+ obj-$(CONFIG_LEDS_MLXCPLD)		+= leds-mlxcpld.o
-+ obj-$(CONFIG_LEDS_NIC78BX)		+= leds-nic78bx.o
-+ obj-$(CONFIG_LEDS_MT6323)		+= leds-mt6323.o
-++obj-$(CONFIG_LEDS_OMNIA)		+= leds-omnia.o
++--- a/drivers/leds/Makefile
+++++ b/drivers/leds/Makefile
++@@ -78,6 +78,7 @@ obj-$(CONFIG_LEDS_MT6323)		+= leds-mt632
++ obj-$(CONFIG_LEDS_LM3692X)		+= leds-lm3692x.o
++ obj-$(CONFIG_LEDS_SC27XX_BLTC)		+= leds-sc27xx-bltc.o
++ obj-$(CONFIG_LEDS_LM3601X)		+= leds-lm3601x.o
++++obj-$(CONFIG_LEDS_OMNIA)		+= leds-omnia.o
 + 
 + # LED SPI Drivers
-+ obj-$(CONFIG_LEDS_DAC124S085)		+= leds-dac124s085.o
-+Index: linux-4.14.101/drivers/leds/leds-omnia.c
-+===================================================================
++ obj-$(CONFIG_LEDS_CR0014114)		+= leds-cr0014114.o
 +--- /dev/null
-++++ linux-4.14.101/drivers/leds/leds-omnia.c
+++++ b/drivers/leds/leds-omnia.c
 +@@ -0,0 +1,259 @@
 ++/*
 ++ * Copyright 2016 CZ.NIC, z.s.p.o.
@@ -1299,11 +1264,11 @@ index 0000000000..477370d4b1
 ++MODULE_DESCRIPTION("Turris Omnia LED driver");
 ++MODULE_LICENSE("GPL v2");
 ++
-diff --git a/target/linux/mvebu/patches-4.14/8891-turris-omnia-custom-led-functions.patch b/target/linux/mvebu/patches-4.14/8891-turris-omnia-custom-led-functions.patch
+diff --git a/target/linux/mvebu/patches-4.19/8891-turris-omnia-custom-led-functions.patch b/target/linux/mvebu/patches-4.19/8891-turris-omnia-custom-led-functions.patch
 new file mode 100644
-index 0000000000..739d30c027
+index 0000000..739d30c
 --- /dev/null
-+++ b/target/linux/mvebu/patches-4.14/8891-turris-omnia-custom-led-functions.patch
++++ b/target/linux/mvebu/patches-4.19/8891-turris-omnia-custom-led-functions.patch
 @@ -0,0 +1,269 @@
 +From d8f1b754703e91bb5156e27e4f0ad5d974328200 Mon Sep 17 00:00:00 2001
 +From: Tomas Hlavacek <tmshlvck@gmail.com>
@@ -1574,11 +1539,11 @@ index 0000000000..739d30c027
 + 		led_classdev_unregister(&chip->leds[i].led_cdev);
 + 
 + 		/* Set AUTO for the LED */
-diff --git a/target/linux/mvebu/patches-4.14/8892-turris-omnia-enable-leds-in-dts.patch b/target/linux/mvebu/patches-4.14/8892-turris-omnia-enable-leds-in-dts.patch
+diff --git a/target/linux/mvebu/patches-4.19/8892-turris-omnia-enable-leds-in-dts.patch b/target/linux/mvebu/patches-4.19/8892-turris-omnia-enable-leds-in-dts.patch
 new file mode 100644
-index 0000000000..c162f2270b
+index 0000000..c162f22
 --- /dev/null
-+++ b/target/linux/mvebu/patches-4.14/8892-turris-omnia-enable-leds-in-dts.patch
++++ b/target/linux/mvebu/patches-4.19/8892-turris-omnia-enable-leds-in-dts.patch
 @@ -0,0 +1,102 @@
 +From d5945cfa05deba62d79d9f75ab3308047f459c51 Mon Sep 17 00:00:00 2001
 +From: Tomas Hlavacek <tmshlvck@gmail.com>
@@ -1683,5 +1648,5 @@ index 0000000000..c162f2270b
 + 
 + 		i2c@1 {
 -- 
-2.21.0
+2.22.0
 
