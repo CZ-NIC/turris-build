@@ -1,4 +1,4 @@
-From 888433f47f7411b1381a70dfaa9b5a44c29b71d7 Mon Sep 17 00:00:00 2001
+From 70c0e881ca17f82a630a80c0bc734b3fde0a7892 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Karel=20Ko=C4=8D=C3=AD?= <karel.koci@nic.cz>
 Date: Tue, 29 May 2018 16:13:18 +0200
 Subject: [PATCH] base-files: do not automatically activate services and
@@ -15,13 +15,13 @@ Signed-off-by: Karel Kočí <karel.koci@nic.cz>
 Signed-off-by: Josef Schlehofer <josef.schlehofer@nic.cz>
 ---
  package/base-files/Makefile                  | 11 ++++
- package/base-files/files/etc/services_wanted | 54 ++++++++++++++++++++
+ package/base-files/files/etc/services_wanted | 55 ++++++++++++++++++++
  package/base-files/files/lib/functions.sh    | 14 ++---
- 3 files changed, 73 insertions(+), 6 deletions(-)
+ 3 files changed, 74 insertions(+), 6 deletions(-)
  create mode 100644 package/base-files/files/etc/services_wanted
 
 diff --git a/package/base-files/Makefile b/package/base-files/Makefile
-index 8bf52d5..2e92428 100644
+index 9ce7abc..7807784 100644
 --- a/package/base-files/Makefile
 +++ b/package/base-files/Makefile
 @@ -209,6 +209,17 @@ define Package/base-files/install
@@ -44,10 +44,10 @@ index 8bf52d5..2e92428 100644
    -include $(PLATFORM_SUBDIR)/base-files.mk
 diff --git a/package/base-files/files/etc/services_wanted b/package/base-files/files/etc/services_wanted
 new file mode 100644
-index 0000000..96ddfb2
+index 0000000..3fc5061
 --- /dev/null
 +++ b/package/base-files/files/etc/services_wanted
-@@ -0,0 +1,54 @@
+@@ -0,0 +1,55 @@
 +asm1062-fix
 +atd
 +atsha204-feed-entropy
@@ -86,6 +86,7 @@ index 0000000..96ddfb2
 +smartd
 +socat
 +sqm
++srv
 +sshd
 +start-indicator
 +sysctl
