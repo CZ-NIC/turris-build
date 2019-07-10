@@ -92,6 +92,17 @@ CONFIG_NFT_COMPAT=y
 CONFIG_NFT_DUP_IPV4=y
 CONFIG_NFT_DUP_IPV6=y
 
+# Virtual Routing and Forwarding (VRF)
+config NET_VRF=y
+# depends on
+CONFIG_NET_L3_MASTER_DEV=y
+
+# IPv6 advanced capabilities
+CONFIG_IPV6_SEG6_HMAC=y
+CONFIG_IPV6_SEG6_LWTUNNEL=y
+CONFIG_IPV6_OPTIMISTIC_DAD=y
+CONFIG_IPV6_ROUTER_PREF=y
+
 # USB
 CONFIG_DEFAULT_kmod-usb-core=y
 CONFIG_DEFAULT_kmod-usb-storage=y
