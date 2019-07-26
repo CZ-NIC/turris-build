@@ -1,24 +1,25 @@
-From 8b7850a187064b57bdfdbaa750da404798522109 Mon Sep 17 00:00:00 2001
+From 6e2ccbe10d2ea5d07d1c11b61d06b44202fc6bcb Mon Sep 17 00:00:00 2001
 From: Josef Schlehofer <josef.schlehofer@nic.cz>
-Date: Wed, 27 Mar 2019 02:12:12 +0100
+Date: Fri, 26 Jul 2019 09:08:22 +0200
 Subject: [PATCH] asterisk16: add liburiparser as dependency
 
 ---
  net/asterisk-16.x/Makefile | 2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/net/asterisk-16.x/Makefile b/net/asterisk-16.x/Makefile
-index 92f68f7..9d9378d 100644
+index f7ecbc1..8a7a052 100644
 --- a/net/asterisk-16.x/Makefile
 +++ b/net/asterisk-16.x/Makefile
-@@ -442,7 +442,7 @@ define Package/$(PKG_NAME)
+@@ -441,7 +441,7 @@ define Package/$(PKG_NAME)
  $(call Package/$(PKG_NAME)/Default)
    TITLE:=Complete open source PBX, v$(PKG_VERSION)
    MENU:=1
 -  DEPENDS:=$(CXX_DEPENDS) +jansson +libcap +libedit +libopenssl +libsqlite3 +libuuid +libxml2 +zlib
 +  DEPENDS:=$(CXX_DEPENDS) +jansson +libcap +libedit +libopenssl +libsqlite3 +libuuid +libxml2 +liburiparser +zlib
+   USERID:=asterisk=385:asterisk=385
  endef
+ 
+-- 
+2.20.1
 
- define Package/$(PKG_NAME)/description
---
-2.21.0
