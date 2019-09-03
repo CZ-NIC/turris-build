@@ -72,6 +72,7 @@ index 0000000..3fc5061
 +lvm2
 +lxc-auto
 +mountd
++mox-shutdown-powersave
 +mox_autosetup
 +nethist
 +network
