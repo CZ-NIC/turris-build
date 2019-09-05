@@ -1,4 +1,5 @@
-include(utils.m4)dnl Include utility macros
+include(utils.m4)dnl
+include(luci-utils.m4)dnl
 _FEATURE_GUARD_
 
 -- Kernel --
@@ -32,11 +33,11 @@ Install("ntfs-3g", "ntfs-3g-utils", { priority = 40 })
 Install("sshfs", { priority = 40 })
 
 -- Network
-Install("wget", "rsync", "rsyncd", "samba36-client", "samba36-server", { priority = 40 })
+Install("wget", "rsync", "rsyncd", { priority = 40 })
+forInstall(samba4,client,server,admin,utils)
 
 -- Luci
-forInstall(luci-app,hd-idle,minidlna,samba)
-Install("luci-mod-admin-full", { priority = 40 })
+luci_app("hd-idle","minidlna", "samba4")
 
 -- Encryption --
 Install("cryptsetup", "kmod-cryptodev", "kmod-crypto-user", { priority = 40 })

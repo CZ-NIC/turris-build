@@ -445,7 +445,7 @@ pkgsrepo() {
 	mkdir -p "$OUTPUT_DIR"
 	mv bin/packages/*/* "$OUTPUT_DIR"
 	mv bin/targets/*/*/packages "$OUTPUT_DIR/core"
-	mv bin/targets/*/*/config.seed "$OUTPUT_DIR"
+	mv bin/targets/*/*/config.buildinfo "$OUTPUT_DIR"
 	mv bin/git-hash "$OUTPUT_DIR"
 }
 
@@ -567,9 +567,8 @@ print_help() {
 	echo "	-s KEY		Sign packges with given private key. Key has to be generated using using tool."
 	echo "	-h, --help	Show this help text"
 	echo
-	echo "Configuration override options:"
-	echo "	-b BRANCH	Branch to checkout in OpenWRT. You can optionaly use here any valid git reference in OpenWRT git tree."
-	echo "	-p BRANCH	Name of the branch that is being build. If not specified 'hbs' is used."
+	echo "Advanced options:"
+	echo "	-p BRANCH	Name of the target build alias. This is used to set OPKG feeds and for repo_checkout. If not specified '$PUBLISH_BRANCH' is used."
 	echo "	-l		Do not update local git mirrors. Use them as they are to fetch OpenWRT and its feeds."
 	echo "	-d		Do not use shallow checkouts"
 	echo "	-x		Enable debug mode"
@@ -607,10 +606,6 @@ while [ $# -gt 0 ]; do
 		-p)
 			shift
 			PUBLISH_BRANCH="$1"
-			;;
-		-b)
-			shift
-			OPENWRT_BRANCH="$1"
 			;;
 		-l)
 			mirror_updated="override"

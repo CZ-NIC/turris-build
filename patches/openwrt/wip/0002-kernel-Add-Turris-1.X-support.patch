@@ -1,4 +1,4 @@
-From c59526219dfbefd7c4accdd749921eb0f52413d0 Mon Sep 17 00:00:00 2001
+From a75ca779ab01b3aaeca7103856561fdd6fc91a73 Mon Sep 17 00:00:00 2001
 From: Michal Hrusecky <Michal@Hrusecky.net>
 Date: Wed, 27 Dec 2017 17:19:45 +0100
 Subject: [PATCH] kernel: Add Turris 1.X support
@@ -13,13 +13,12 @@ Signed-off-by: Michal Hrusecky <Michal@Hrusecky.net>
 Signed-off-by: Karel Kočí <karel.koci@nic.cz>
 ---
  .../mpc85xx/base-files/etc/board.d/02_network |   4 +
- target/linux/mpc85xx/config-4.14              |   3 +
  .../arch/powerpc/boot/dts/turris-nand-bch.dts |  27 ++
  .../arch/powerpc/boot/dts/turris.dtsi         | 322 ++++++++++++++++++
  target/linux/mpc85xx/p2020/profiles/turris.mk |  29 ++
  ...sl_elbc-add-support-for-software-ecc.patch | 223 ++++++++++++
  ...a8k-extend-slave-bus-implementations.patch | 235 +++++++++++++
- 7 files changed, 843 insertions(+)
+ 6 files changed, 840 insertions(+)
  create mode 100644 target/linux/mpc85xx/files-4.19/arch/powerpc/boot/dts/turris-nand-bch.dts
  create mode 100644 target/linux/mpc85xx/files-4.19/arch/powerpc/boot/dts/turris.dtsi
  create mode 100644 target/linux/mpc85xx/p2020/profiles/turris.mk
@@ -27,12 +26,12 @@ Signed-off-by: Karel Kočí <karel.koci@nic.cz>
  create mode 100644 target/linux/mpc85xx/patches-4.19/233-net-dsa-qca8k-extend-slave-bus-implementations.patch
 
 diff --git a/target/linux/mpc85xx/base-files/etc/board.d/02_network b/target/linux/mpc85xx/base-files/etc/board.d/02_network
-index d6b4eebf14..53a92bf341 100755
+index f907fd2..aaef1cb 100755
 --- a/target/linux/mpc85xx/base-files/etc/board.d/02_network
 +++ b/target/linux/mpc85xx/base-files/etc/board.d/02_network
 @@ -23,6 +23,10 @@ tplink,tl-wdr4900-v1)
  		"0@eth0" "2:lan:1" "3:lan:2" "4:lan:3" "5:lan:4" "1:wan"
- 	ucidef_set_interface_macaddr "wan" "$(mtd_get_mac_binary config 332)"
+ 	ucidef_set_interface_macaddr "wan" "$(mtd_get_mac_binary config 0x14c)"
  	;;
 +fsl,P2020RDB)
 +	ucidef_set_interface_lan "lan1 lan2 lan3 lan4 lan5"
@@ -41,20 +40,9 @@ index d6b4eebf14..53a92bf341 100755
  *)
  	ucidef_set_interfaces_lan_wan "eth0" "eth1"
  	;;
-diff --git a/target/linux/mpc85xx/config-4.14 b/target/linux/mpc85xx/config-4.14
-index f2337210d4..ce953e4532 100644
---- a/target/linux/mpc85xx/config-4.14
-+++ b/target/linux/mpc85xx/config-4.14
-@@ -363,3 +363,6 @@ CONFIG_WATCHDOG_CORE=y
- # CONFIG_XPS_USB_HCD_XILINX is not set
- CONFIG_XZ_DEC_BCJ=y
- CONFIG_XZ_DEC_POWERPC=y
-+CONFIG_FB_FSL_DIU=n
-+CONFIG_VGA_CONSOLE=y
-+CONFIG_VGACON_SOFT_SCROLLBACK=n
 diff --git a/target/linux/mpc85xx/files-4.19/arch/powerpc/boot/dts/turris-nand-bch.dts b/target/linux/mpc85xx/files-4.19/arch/powerpc/boot/dts/turris-nand-bch.dts
 new file mode 100644
-index 0000000000..59ef5fdf2e
+index 0000000..59ef5fd
 --- /dev/null
 +++ b/target/linux/mpc85xx/files-4.19/arch/powerpc/boot/dts/turris-nand-bch.dts
 @@ -0,0 +1,27 @@
@@ -87,7 +75,7 @@ index 0000000000..59ef5fdf2e
 +*/
 diff --git a/target/linux/mpc85xx/files-4.19/arch/powerpc/boot/dts/turris.dtsi b/target/linux/mpc85xx/files-4.19/arch/powerpc/boot/dts/turris.dtsi
 new file mode 100644
-index 0000000000..03c8fc5ade
+index 0000000..03c8fc5
 --- /dev/null
 +++ b/target/linux/mpc85xx/files-4.19/arch/powerpc/boot/dts/turris.dtsi
 @@ -0,0 +1,322 @@
@@ -415,7 +403,7 @@ index 0000000000..03c8fc5ade
 +/include/ "fsl/p2020si-post.dtsi"
 diff --git a/target/linux/mpc85xx/p2020/profiles/turris.mk b/target/linux/mpc85xx/p2020/profiles/turris.mk
 new file mode 100644
-index 0000000000..e7c4048e08
+index 0000000..e7c4048
 --- /dev/null
 +++ b/target/linux/mpc85xx/p2020/profiles/turris.mk
 @@ -0,0 +1,29 @@
@@ -450,7 +438,7 @@ index 0000000000..e7c4048e08
 +$(eval $(call Profile,TURRIS))
 diff --git a/target/linux/mpc85xx/patches-4.19/230-mtd-rawnand-fsl_elbc-add-support-for-software-ecc.patch b/target/linux/mpc85xx/patches-4.19/230-mtd-rawnand-fsl_elbc-add-support-for-software-ecc.patch
 new file mode 100644
-index 0000000000..0400c09ebc
+index 0000000..0400c09
 --- /dev/null
 +++ b/target/linux/mpc85xx/patches-4.19/230-mtd-rawnand-fsl_elbc-add-support-for-software-ecc.patch
 @@ -0,0 +1,223 @@
@@ -679,7 +667,7 @@ index 0000000000..0400c09ebc
 + 	struct fsl_elbc_fcm_ctrl *elbc_fcm_ctrl = priv->ctrl->nand;
 diff --git a/target/linux/mpc85xx/patches-4.19/233-net-dsa-qca8k-extend-slave-bus-implementations.patch b/target/linux/mpc85xx/patches-4.19/233-net-dsa-qca8k-extend-slave-bus-implementations.patch
 new file mode 100644
-index 0000000000..d5aca2e691
+index 0000000..d5aca2e
 --- /dev/null
 +++ b/target/linux/mpc85xx/patches-4.19/233-net-dsa-qca8k-extend-slave-bus-implementations.patch
 @@ -0,0 +1,235 @@
@@ -919,5 +907,5 @@ index 0000000000..d5aca2e691
 +2.19.2
 +
 -- 
-2.21.0
+2.22.1
 

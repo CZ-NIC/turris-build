@@ -1,5 +1,5 @@
-include(utils.m4)dnl Include utility macros
-include(repository.m4)dnl Include Repository command
+include(utils.m4)dnl
+include(repository.m4)dnl
 
 -- Updater itself
 Install('updater-ng', 'updater-supervisor', { critical = true })
@@ -15,7 +15,7 @@ forInstallCritical(kmod,file2args(kmod.list))
 if board == "mox" then
 	forInstallCritical(kmod,file2args(kmod-mox.list))
 	Install("mox-support", { critical = true })
-	Install("zram-swap", { priority = 40 })
+	Install("kmod-ath10k-ct", "zram-swap", { priority = 40 })
 elseif board == "omnia" then
 	forInstallCritical(kmod,file2args(kmod-omnia.list))
 	Install("omnia-support", { critical = true })

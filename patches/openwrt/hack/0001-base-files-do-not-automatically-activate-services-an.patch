@@ -47,12 +47,11 @@ new file mode 100644
 index 0000000..3fc5061
 --- /dev/null
 +++ b/package/base-files/files/etc/services_wanted
-@@ -0,0 +1,55 @@
+@@ -0,0 +1,54 @@
 +asm1062-fix
 +atd
 +atsha204-feed-entropy
 +boot
-+btrfs-scan
 +cron
 +cups
 +dev-detect
@@ -131,5 +130,5 @@ index 860fc04..0fe9b30 100755
  
  	return $ret
 -- 
-2.22.0
+2.22.1
 

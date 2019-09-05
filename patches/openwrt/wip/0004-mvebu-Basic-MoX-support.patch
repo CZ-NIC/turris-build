@@ -1,4 +1,4 @@
-From 94e43988cd50595b556433a10924dc155326b461 Mon Sep 17 00:00:00 2001
+From 8f12c302508424d808d3baa1c122f4003b2084da Mon Sep 17 00:00:00 2001
 From: Michal Hrusecky <Michal@Hrusecky.net>
 Date: Wed, 7 Mar 2018 17:10:32 +0100
 Subject: [PATCH] mvebu: Basic MoX support
@@ -57,8 +57,8 @@ Signed-off-by: Karel Kočí <karel.koci@nic.cz>
  ...e-MVNETA_CAUSE_PSC_SYNC_CHANGE-inte.patch} |  18 +-
  ...a-add-module-EEPROM-reading-support.patch} |  13 +-
  ...d-phy-remove-fixed_phy_update_state.patch} |  17 +-
- ...eprom-ethtool-access-into-netdev-co.patch} |  38 +-
- ...p-use-netdev-sfp_bus-for-start-stop.patch} |   9 +-
+ ...eprom-ethtool-access-into-netdev-co.patch} |  34 +-
+ ...p-use-netdev-sfp_bus-for-start-stop.patch} |   3 +
  ...-marvell-10G-phy-support-to-use-SFP.patch} |  11 +-
  ...tch => 90047-sfp-add-sfp-compatible.patch} |   7 +-
  ...armada-37xx-periph-cosmetic-changes.patch} |  21 +-
@@ -66,7 +66,6 @@ Signed-off-by: Karel Kočí <karel.koci@nic.cz>
  ...37xx-periph-add-DVFS-support-for-cp.patch} |  20 +-
  ...eq-Add-DVFS-support-for-Armada-37xx.patch} |  18 +-
  ...SPI-mode-before-asserting-chip-sele.patch} |  18 +-
- ...rvell-Fix-A37xx-UART0-register-size.patch} |  11 +-
  ...-marvell-armada-37xx-add-UART-clock.patch} |   9 +-
  ...-armada-37xx-add-nodes-allowing-cpu.patch} |  13 +-
  ...s-marvell-armada37xx-Add-eth0-alias.patch} |   9 +-
@@ -144,7 +143,7 @@ Signed-off-by: Karel Kočí <karel.koci@nic.cz>
  ...37xx-periph-Fix-switching-CPU-rate-.patch} |   0
  ...37xx-periph-Fix-wrong-return-value-.patch} |   0
  ...37xx-periph-Remove-unused-var-num_p.patch} |   0
- 133 files changed, 14295 insertions(+), 307 deletions(-)
+ 132 files changed, 14279 insertions(+), 302 deletions(-)
  delete mode 100644 target/linux/mvebu/patches-4.14/527-PCI-aardvark-allow-to-specify-link-capability.patch
  create mode 100644 target/linux/mvebu/patches-4.14/90001-crypto-inside-secure-remove-null-check-before-kfree.patch
  create mode 100644 target/linux/mvebu/patches-4.14/90002-crypto-inside-secure-do-not-use-areq-result-for-part.patch
@@ -189,8 +188,8 @@ Signed-off-by: Karel Kočí <karel.koci@nic.cz>
  rename target/linux/mvebu/patches-4.14/{405-net-mvneta-disable-MVNETA_CAUSE_PSC_SYNC_CHANGE-inte.patch => 90041-net-mvneta-disable-MVNETA_CAUSE_PSC_SYNC_CHANGE-inte.patch} (72%)
  rename target/linux/mvebu/patches-4.14/{406-net-mvneta-add-module-EEPROM-reading-support.patch => 90042-net-mvneta-add-module-EEPROM-reading-support.patch} (74%)
  rename target/linux/mvebu/patches-4.14/{407-phy-fixed-phy-remove-fixed_phy_update_state.patch => 90043-phy-fixed-phy-remove-fixed_phy_update_state.patch} (78%)
- rename target/linux/mvebu/patches-4.14/{408-sfp-move-module-eeprom-ethtool-access-into-netdev-co.patch => 90044-sfp-move-module-eeprom-ethtool-access-into-netdev-co.patch} (78%)
- rename target/linux/mvebu/patches-4.14/{409-sfp-use-netdev-sfp_bus-for-start-stop.patch => 90045-sfp-use-netdev-sfp_bus-for-start-stop.patch} (79%)
+ rename target/linux/mvebu/patches-4.14/{408-sfp-move-module-eeprom-ethtool-access-into-netdev-co.patch => 90044-sfp-move-module-eeprom-ethtool-access-into-netdev-co.patch} (81%)
+ rename target/linux/mvebu/patches-4.14/{409-sfp-use-netdev-sfp_bus-for-start-stop.patch => 90045-sfp-use-netdev-sfp_bus-for-start-stop.patch} (98%)
  rename target/linux/mvebu/patches-4.14/{410-sfp-hack-allow-marvell-10G-phy-support-to-use-SFP.patch => 90046-sfp-hack-allow-marvell-10G-phy-support-to-use-SFP.patch} (93%)
  rename target/linux/mvebu/patches-4.14/{411-sfp-add-sfp-compatible.patch => 90047-sfp-add-sfp-compatible.patch} (84%)
  rename target/linux/mvebu/patches-4.14/{503-clk-mvebu-armada-37xx-periph-cosmetic-changes.patch => 90048-clk-mvebu-armada-37xx-periph-cosmetic-changes.patch} (73%)
@@ -198,7 +197,6 @@ Signed-off-by: Karel Kočí <karel.koci@nic.cz>
  rename target/linux/mvebu/patches-4.14/{505-clk-mvebu-armada-37xx-periph-add-DVFS-support-for-cp.patch => 90050-clk-mvebu-armada-37xx-periph-add-DVFS-support-for-cp.patch} (93%)
  rename target/linux/mvebu/patches-4.14/{506-cpufreq-Add-DVFS-support-for-Armada-37xx.patch => 90051-cpufreq-Add-DVFS-support-for-Armada-37xx.patch} (93%)
  rename target/linux/mvebu/patches-4.14/{501-spi-a3700-Change-SPI-mode-before-asserting-chip-sele.patch => 90052-spi-a3700-Change-SPI-mode-before-asserting-chip-sele.patch} (74%)
- rename target/linux/mvebu/patches-4.14/{500-arm64-dts-marvell-Fix-A37xx-UART0-register-size.patch => 90053-arm64-dts-marvell-Fix-A37xx-UART0-register-size.patch} (73%)
  rename target/linux/mvebu/patches-4.14/{502-arm64-dts-marvell-armada-37xx-add-UART-clock.patch => 90054-arm64-dts-marvell-armada-37xx-add-UART-clock.patch} (74%)
  rename target/linux/mvebu/patches-4.14/{507-arm64-dts-marvell-armada-37xx-add-nodes-allowing-cpu.patch => 90055-arm64-dts-marvell-armada-37xx-add-nodes-allowing-cpu.patch} (73%)
  rename target/linux/mvebu/patches-4.14/{520-arm64-dts-marvell-armada37xx-Add-eth0-alias.patch => 90056-arm64-dts-marvell-armada37xx-Add-eth0-alias.patch} (59%)
@@ -278,19 +276,19 @@ Signed-off-by: Karel Kočí <karel.koci@nic.cz>
  rename target/linux/mvebu/patches-4.14/{512-clk-mvebu-armada-37xx-periph-Remove-unused-var-num_p.patch => 99512-clk-mvebu-armada-37xx-periph-Remove-unused-var-num_p.patch} (100%)
 
 diff --git a/target/linux/mvebu/config-4.14 b/target/linux/mvebu/config-4.14
-index 7b26c9b..1cfce96 100644
+index 7a0caee..50550a7 100644
 --- a/target/linux/mvebu/config-4.14
 +++ b/target/linux/mvebu/config-4.14
-@@ -379,6 +379,7 @@ CONFIG_NEED_DMA_MAP_STATE=y
+@@ -351,6 +351,7 @@ CONFIG_MV_XOR=y
+ CONFIG_NEED_DMA_MAP_STATE=y
  CONFIG_NEON=y
- # CONFIG_NET_CLS_CGROUP is not set
  CONFIG_NET_DSA=y
 +CONFIG_NET_DSA_MV88E6060=y
  CONFIG_NET_DSA_MV88E6XXX=y
  CONFIG_NET_DSA_MV88E6XXX_GLOBAL2=y
  CONFIG_NET_DSA_TAG_DSA=y
 diff --git a/target/linux/mvebu/image/cortex-a53.mk b/target/linux/mvebu/image/cortex-a53.mk
-index d7014d6..4c5baf5 100644
+index 228155e..6eba3f2 100644
 --- a/target/linux/mvebu/image/cortex-a53.mk
 +++ b/target/linux/mvebu/image/cortex-a53.mk
 @@ -27,6 +27,17 @@ define Device/globalscale_espressobin-v7-emmc
@@ -4176,7 +4174,7 @@ diff --git a/target/linux/mvebu/patches-4.14/402-sfp-display-SFP-module-informat
 similarity index 99%
 rename from target/linux/mvebu/patches-4.14/402-sfp-display-SFP-module-information.patch
 rename to target/linux/mvebu/patches-4.14/90037-sfp-display-SFP-module-information.patch
-index ccc9896..ead2977 100644
+index c531c37..9b6e7ab 100644
 --- a/target/linux/mvebu/patches-4.14/402-sfp-display-SFP-module-information.patch
 +++ b/target/linux/mvebu/patches-4.14/90037-sfp-display-SFP-module-information.patch
 @@ -288,3 +288,6 @@ Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
@@ -4238,7 +4236,7 @@ diff --git a/target/linux/mvebu/patches-4.14/403-net-mvneta-convert-to-phylink.p
 similarity index 92%
 rename from target/linux/mvebu/patches-4.14/403-net-mvneta-convert-to-phylink.patch
 rename to target/linux/mvebu/patches-4.14/90039-net-mvneta-convert-to-phylink.patch
-index 577317a..850d3be 100644
+index 34a2d34..5d525d8 100644
 --- a/target/linux/mvebu/patches-4.14/403-net-mvneta-convert-to-phylink.patch
 +++ b/target/linux/mvebu/patches-4.14/90039-net-mvneta-convert-to-phylink.patch
 @@ -1,7 +1,7 @@
@@ -5029,10 +5027,10 @@ index 71c2f45..e04204a 100644
 +2.21.0
 +
 diff --git a/target/linux/mvebu/patches-4.14/408-sfp-move-module-eeprom-ethtool-access-into-netdev-co.patch b/target/linux/mvebu/patches-4.14/90044-sfp-move-module-eeprom-ethtool-access-into-netdev-co.patch
-similarity index 78%
+similarity index 81%
 rename from target/linux/mvebu/patches-4.14/408-sfp-move-module-eeprom-ethtool-access-into-netdev-co.patch
 rename to target/linux/mvebu/patches-4.14/90044-sfp-move-module-eeprom-ethtool-access-into-netdev-co.patch
-index 3fd07d2..79d34e6 100644
+index a5efa25..9a138b9 100644
 --- a/target/linux/mvebu/patches-4.14/408-sfp-move-module-eeprom-ethtool-access-into-netdev-co.patch
 +++ b/target/linux/mvebu/patches-4.14/90044-sfp-move-module-eeprom-ethtool-access-into-netdev-co.patch
 @@ -1,21 +1,24 @@
@@ -5074,20 +5072,7 @@ index 3fd07d2..79d34e6 100644
   	.set_link_ksettings = mvneta_ethtool_set_link_ksettings,
   	.get_wol        = mvneta_ethtool_get_wol,
   	.set_wol        = mvneta_ethtool_set_wol,
-@@ -47,9 +50,11 @@ Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
-  	.get_eee	= mvneta_ethtool_get_eee,
-  	.set_eee	= mvneta_ethtool_set_eee,
-  };
-+diff --git a/drivers/net/phy/phylink.c b/drivers/net/phy/phylink.c
-+index 5bfc961e53c9..fd0944c209c2 100644
- --- a/drivers/net/phy/phylink.c
- +++ b/drivers/net/phy/phylink.c
--@@ -1058,34 +1058,6 @@ int phylink_ethtool_set_pauseparam(struc
-+@@ -1058,34 +1058,6 @@ int phylink_ethtool_set_pauseparam(struct phylink *pl,
-  }
-  EXPORT_SYMBOL_GPL(phylink_ethtool_set_pauseparam);
-  
-@@ -84,9 +89,11 @@ Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
+@@ -84,9 +87,11 @@ Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
   int phylink_init_eee(struct phylink *pl, bool clk_stop_enable)
   {
   	int ret = -EPROTONOSUPPORT;
@@ -5100,7 +5085,7 @@ index 3fd07d2..79d34e6 100644
   	bus->socket_ops->attach(bus->sfp);
   	if (bus->started)
   		bus->socket_ops->start(bus->sfp);
-@@ -94,7 +101,7 @@ Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
+@@ -94,7 +99,7 @@ Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
   	bus->registered = true;
   	return 0;
   }
@@ -5109,7 +5094,7 @@ index 3fd07d2..79d34e6 100644
   		if (bus->phydev && ops && ops->disconnect_phy)
   			ops->disconnect_phy(bus->upstream);
   	}
-@@ -119,6 +126,8 @@ Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
+@@ -119,6 +124,8 @@ Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
   	return bus->socket_ops->module_eeprom(bus->sfp, ee, data);
   }
   EXPORT_SYMBOL_GPL(sfp_get_module_eeprom);
@@ -5118,7 +5103,7 @@ index 3fd07d2..79d34e6 100644
  --- a/include/linux/netdevice.h
  +++ b/include/linux/netdevice.h
  @@ -57,6 +57,7 @@ struct device;
-@@ -129,7 +138,7 @@ Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
+@@ -129,7 +136,7 @@ Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
   /* 802.11 specific */
   struct wireless_dev;
   /* 802.15.4 specific */
@@ -5127,7 +5112,7 @@ index 3fd07d2..79d34e6 100644
   	struct netprio_map __rcu *priomap;
   #endif
   	struct phy_device	*phydev;
-@@ -137,9 +146,11 @@ Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
+@@ -137,9 +144,11 @@ Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
   	struct lock_class_key	*qdisc_tx_busylock;
   	struct lock_class_key	*qdisc_running_key;
   	bool			proto_down;
@@ -5140,7 +5125,7 @@ index 3fd07d2..79d34e6 100644
   				    struct ethtool_pauseparam *);
   int phylink_ethtool_set_pauseparam(struct phylink *,
   				   struct ethtool_pauseparam *);
-@@ -149,6 +160,8 @@ Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
+@@ -149,6 +158,8 @@ Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
   int phylink_init_eee(struct phylink *, bool);
   int phylink_get_eee_err(struct phylink *);
   int phylink_ethtool_get_eee(struct phylink *, struct ethtool_eee *);
@@ -5149,7 +5134,7 @@ index 3fd07d2..79d34e6 100644
  --- a/net/core/ethtool.c
  +++ b/net/core/ethtool.c
  @@ -22,6 +22,7 @@
-@@ -179,3 +192,6 @@ Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
+@@ -179,3 +190,6 @@ Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
   	if (phydev && phydev->drv && phydev->drv->module_eeprom)
   		return phydev->drv->module_eeprom(phydev, ee, data);
   
@@ -5157,31 +5142,13 @@ index 3fd07d2..79d34e6 100644
 +2.21.0
 +
 diff --git a/target/linux/mvebu/patches-4.14/409-sfp-use-netdev-sfp_bus-for-start-stop.patch b/target/linux/mvebu/patches-4.14/90045-sfp-use-netdev-sfp_bus-for-start-stop.patch
-similarity index 79%
+similarity index 98%
 rename from target/linux/mvebu/patches-4.14/409-sfp-use-netdev-sfp_bus-for-start-stop.patch
 rename to target/linux/mvebu/patches-4.14/90045-sfp-use-netdev-sfp_bus-for-start-stop.patch
-index 4db3867..81378be 100644
+index 10bd2d0..46a63ba 100644
 --- a/target/linux/mvebu/patches-4.14/409-sfp-use-netdev-sfp_bus-for-start-stop.patch
 +++ b/target/linux/mvebu/patches-4.14/90045-sfp-use-netdev-sfp_bus-for-start-stop.patch
-@@ -1,13 +1,15 @@
--From 883dc66755313e133a787eba4dfde313fe33525b Mon Sep 17 00:00:00 2001
-+From c0f7b78aa709443779170e4ebbe873e49e99578f Mon Sep 17 00:00:00 2001
- From: Russell King <rmk+kernel@armlinux.org.uk>
- Date: Fri, 14 Apr 2017 16:41:55 +0100
--Subject: sfp: use netdev sfp_bus for start/stop
-+Subject: [PATCH 045/126] sfp: use netdev sfp_bus for start/stop
- 
- Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
- ---
-  drivers/net/phy/phylink.c | 8 ++++----
-  1 file changed, 4 insertions(+), 4 deletions(-)
- 
-+diff --git a/drivers/net/phy/phylink.c b/drivers/net/phy/phylink.c
-+index fd0944c209c2..eb9d9ee24e40 100644
- --- a/drivers/net/phy/phylink.c
- +++ b/drivers/net/phy/phylink.c
- @@ -775,8 +775,8 @@ void phylink_start(struct phylink *pl)
-@@ -32,3 +34,6 @@ Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
+@@ -32,3 +32,6 @@ Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
   
   	phylink_run_resolve_and_disable(pl, PHYLINK_DISABLE_STOPPED);
   }
@@ -5229,7 +5196,7 @@ diff --git a/target/linux/mvebu/patches-4.14/411-sfp-add-sfp-compatible.patch b/
 similarity index 84%
 rename from target/linux/mvebu/patches-4.14/411-sfp-add-sfp-compatible.patch
 rename to target/linux/mvebu/patches-4.14/90047-sfp-add-sfp-compatible.patch
-index d2e7d22..19d2a21 100644
+index 9174765..b71aa71 100644
 --- a/target/linux/mvebu/patches-4.14/411-sfp-add-sfp-compatible.patch
 +++ b/target/linux/mvebu/patches-4.14/90047-sfp-add-sfp-compatible.patch
 @@ -1,7 +1,7 @@
@@ -5628,48 +5595,6 @@ index 3ac7091..a26ec53 100644
   	return 0;
   }
   
-+-- 
-+2.21.0
-+
-diff --git a/target/linux/mvebu/patches-4.14/500-arm64-dts-marvell-Fix-A37xx-UART0-register-size.patch b/target/linux/mvebu/patches-4.14/90053-arm64-dts-marvell-Fix-A37xx-UART0-register-size.patch
-similarity index 73%
-rename from target/linux/mvebu/patches-4.14/500-arm64-dts-marvell-Fix-A37xx-UART0-register-size.patch
-rename to target/linux/mvebu/patches-4.14/90053-arm64-dts-marvell-Fix-A37xx-UART0-register-size.patch
-index 9e2b1c1..bc7795f 100644
---- a/target/linux/mvebu/patches-4.14/500-arm64-dts-marvell-Fix-A37xx-UART0-register-size.patch
-+++ b/target/linux/mvebu/patches-4.14/90053-arm64-dts-marvell-Fix-A37xx-UART0-register-size.patch
-@@ -1,7 +1,7 @@
--From c737abc193d16e62e23e2fb585b8b7398ab380d8 Mon Sep 17 00:00:00 2001
-+From 53e48e6a26036b17a782627499feada841a40709 Mon Sep 17 00:00:00 2001
- From: allen yan <yanwei@marvell.com>
- Date: Thu, 7 Sep 2017 15:04:53 +0200
--Subject: arm64: dts: marvell: Fix A37xx UART0 register size
-+Subject: [PATCH 053/126] arm64: dts: marvell: Fix A37xx UART0 register size
- 
- Armada-37xx UART0 registers are 0x200 bytes wide. Right next to them are
- the UART1 registers that should not be declared in this node.
-@@ -16,6 +16,8 @@ Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
-  arch/arm64/boot/dts/marvell/armada-37xx.dtsi            | 2 +-
-  2 files changed, 2 insertions(+), 2 deletions(-)
- 
-+diff --git a/Documentation/devicetree/bindings/serial/mvebu-uart.txt b/Documentation/devicetree/bindings/serial/mvebu-uart.txt
-+index 6087defd9f93..d37fabe17bd1 100644
- --- a/Documentation/devicetree/bindings/serial/mvebu-uart.txt
- +++ b/Documentation/devicetree/bindings/serial/mvebu-uart.txt
- @@ -8,6 +8,6 @@ Required properties:
-@@ -26,6 +28,8 @@ Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
- +		reg = <0x12000 0x200>;
-  		interrupts = <43>;
-  	};
-+diff --git a/arch/arm64/boot/dts/marvell/armada-37xx.dtsi b/arch/arm64/boot/dts/marvell/armada-37xx.dtsi
-+index 6842cae5b35b..a4483ba82ecc 100644
- --- a/arch/arm64/boot/dts/marvell/armada-37xx.dtsi
- +++ b/arch/arm64/boot/dts/marvell/armada-37xx.dtsi
- @@ -134,7 +134,7 @@
-@@ -37,3 +41,6 @@ Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
-  				interrupts = <GIC_SPI 11 IRQ_TYPE_LEVEL_HIGH>;
-  				status = "disabled";
-  			};
 +-- 
 +2.21.0
 +
@@ -16701,5 +16626,5 @@ similarity index 100%
 rename from target/linux/mvebu/patches-4.14/512-clk-mvebu-armada-37xx-periph-Remove-unused-var-num_p.patch
 rename to target/linux/mvebu/patches-4.14/99512-clk-mvebu-armada-37xx-periph-Remove-unused-var-num_p.patch
 -- 
-2.21.0
+2.22.1
 
