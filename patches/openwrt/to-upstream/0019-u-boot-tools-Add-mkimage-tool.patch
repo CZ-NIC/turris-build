@@ -1,4 +1,4 @@
-From 620cf222b9de4de5013f2f8818a2c0e01e6f9a33 Mon Sep 17 00:00:00 2001
+From 2f7275408acac866239cda7fd7058c090fea0acb Mon Sep 17 00:00:00 2001
 From: Michal Hrusecky <michal.hrusecky@nic.cz>
 Date: Wed, 20 Mar 2019 16:42:28 +0100
 Subject: [PATCH] u-boot tools: Add mkimage tool
@@ -48,7 +48,7 @@ diff --git a/package/boot/uboot-envtools/Makefile b/package/boot/uboot-tools/Mak
 similarity index 65%
 rename from package/boot/uboot-envtools/Makefile
 rename to package/boot/uboot-tools/Makefile
-index 71b842b96e..83db36ebff 100644
+index 4be043d..2ff2340 100644
 --- a/package/boot/uboot-envtools/Makefile
 +++ b/package/boot/uboot-tools/Makefile
 @@ -7,7 +7,7 @@
@@ -58,8 +58,8 @@ index 71b842b96e..83db36ebff 100644
 -PKG_NAME:=uboot-envtools
 +PKG_NAME:=uboot-tools
  PKG_DISTNAME:=u-boot
- PKG_VERSION:=2018.03
- PKG_RELEASE:=3
+ PKG_VERSION:=2019.07
+ PKG_RELEASE:=1
 @@ -43,23 +43,49 @@ define Package/uboot-envtools/description
   This package includes tools to read and modify U-Boot bootloader environment.
  endef
@@ -206,5 +206,5 @@ similarity index 100%
 rename from package/boot/uboot-envtools/patches/001-compile.patch
 rename to package/boot/uboot-tools/patches/001-compile.patch
 -- 
-2.21.0
+2.23.0
 
