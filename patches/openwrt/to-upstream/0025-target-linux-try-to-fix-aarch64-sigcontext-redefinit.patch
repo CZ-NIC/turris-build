@@ -1,0 +1,35 @@
+From 4cb77654827ff1a88495368ba6e5d2a87703076e Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Karel=20Ko=C4=8D=C3=AD?= <karel.koci@nic.cz>
+Date: Wed, 9 Oct 2019 18:13:46 +0200
+Subject: [PATCH] target/linux: try to fix aarch64 sigcontext redefinition
+
+---
+ .../hack-4.19/950-aarch64-asm-ptrace.patch       | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+ create mode 100644 target/linux/generic/hack-4.19/950-aarch64-asm-ptrace.patch
+
+diff --git a/target/linux/generic/hack-4.19/950-aarch64-asm-ptrace.patch b/target/linux/generic/hack-4.19/950-aarch64-asm-ptrace.patch
+new file mode 100644
+index 0000000..17fa4c9
+--- /dev/null
++++ b/target/linux/generic/hack-4.19/950-aarch64-asm-ptrace.patch
+@@ -0,0 +1,16 @@
++Work around redefinition of sigcontext in libc headers
++
++Introduced with:
++https://github.com/torvalds/linux/commit/43d4da2c45b2f5d62f8a79ff7c6f95089bb24656
++
++--- a/arch/arm64/include/uapi/asm/ptrace.h
+++++ b/arch/arm64/include/uapi/asm/ptrace.h
++@@ -23,8 +23,6 @@
++ #include <linux/types.h>
++ 
++ #include <asm/hwcap.h>
++-#include <asm/sigcontext.h>
++-
++ 
++ /*
++  * PSR bits
+-- 
+2.23.0
+
