@@ -1,6 +1,6 @@
-From 3b2c25a175895c5a33e3e148ead7fdec490cd224 Mon Sep 17 00:00:00 2001
+From 99ccdaeb5ff0471a1d15918ae9cb8ddb120fef1f Mon Sep 17 00:00:00 2001
 From: Josef Schlehofer <pepe.schlehofer@gmail.com>
-Date: Fri, 27 Sep 2019 14:00:28 +0200
+Date: Mon, 14 Oct 2019 18:39:52 +0200
 Subject: [PATCH] netdata: enable PKG_BUILD_PARALLEL
 
 Signed-off-by: Josef Schlehofer <pepe.schlehofer@gmail.com>
@@ -9,7 +9,7 @@ Signed-off-by: Josef Schlehofer <pepe.schlehofer@gmail.com>
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/admin/netdata/Makefile b/admin/netdata/Makefile
-index eb07c20e1..8ec73ad71 100644
+index 2c49f3d1a..390e003ca 100644
 --- a/admin/netdata/Makefile
 +++ b/admin/netdata/Makefile
 @@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
@@ -22,7 +22,7 @@ index eb07c20e1..8ec73ad71 100644
  PKG_MAINTAINER:=Josef Schlehofer <pepe.schlehofer@gmail.com>, Daniel Engberg <daniel.engberg.lists@pyret.net>
  PKG_LICENSE:=GPL-3.0-or-later
 @@ -21,6 +21,7 @@ PKG_SOURCE_URL:=https://codeload.github.com/netdata/netdata/tar.gz/v$(PKG_VERSIO
- PKG_HASH:=032f9001e2b7f774989a200519feeafa3a4d9b7c9e8fb0cfa43e68a8da6ad1bf
+ PKG_HASH:=8396e818f8fe5c1ce345e99a74da8204970810095047dcf5feffee28d35cc937
  
  PKG_INSTALL:=1
 +PKG_BUILD_PARALLEL:=1
