@@ -12,8 +12,8 @@ index 28e957c..f7a3767 100755
 --- a/package/base-files/files/sbin/hotplug-call
 +++ b/package/base-files/files/sbin/hotplug-call
 @@ -13,6 +13,12 @@ export DEVICENAME="${DEVPATH##*/}"
- 
- [ \! -z "$1" -a -d /etc/hotplug.d/$1 ] && {
+
+ if [ \! -z "$1" -a -d /etc/hotplug.d/$1 ]; then
  	for script in $(ls /etc/hotplug.d/$1/* 2>&-); do (
 -		[ -f $script ] && . $script
 +		if [ -f $script ]; then
@@ -24,7 +24,7 @@ index 28e957c..f7a3767 100755
 +			fi
 +		fi
  	); done
- }
--- 
+ fi
+--
 2.7.4
 
