@@ -19,8 +19,8 @@ configuration used in this package.
 
 Signed-off-by: Karel Kočí <karel.koci@nic.cz>
 ---
- .../uboot-envtools/patches/001-compile.patch  | 16 ------
- .../{uboot-envtools => uboot-tools}/Makefile  | 51 ++++++++++++++-----
+ .../uboot-envtools/patches/001-compile.patch  | 16 -----
+ .../{uboot-envtools => uboot-tools}/Makefile  | 63 +++++++++++++------
  .../files/apm821xx                            |  0
  .../files/ar71xx                              |  0
  .../files/ath79                               |  0
@@ -38,9 +38,9 @@ Signed-off-by: Karel Kočí <karel.koci@nic.cz>
  .../files/pistachio                           |  0
  .../files/ramips                              |  0
  .../files/uboot-envtools.sh                   |  0
- 19 files changed, 37 insertions(+), 30 deletions(-)
+ 19 files changed, 44 insertions(+), 35 deletions(-)
  delete mode 100644 package/boot/uboot-envtools/patches/001-compile.patch
- rename package/boot/{uboot-envtools => uboot-tools}/Makefile (60%)
+ rename package/boot/{uboot-envtools => uboot-tools}/Makefile (56%)
  rename package/boot/{uboot-envtools => uboot-tools}/files/apm821xx (100%)
  rename package/boot/{uboot-envtools => uboot-tools}/files/ar71xx (100%)
  rename package/boot/{uboot-envtools => uboot-tools}/files/ath79 (100%)
@@ -82,10 +82,10 @@ index 5413aa4a41..0000000000
 - HOST_EXTRACFLAGS  = -I$(srctree)/tools \
 - 		$(patsubst -I%,-idirafter%, $(filter -I%, $(UBOOTINCLUDE))) \
 diff --git a/package/boot/uboot-envtools/Makefile b/package/boot/uboot-tools/Makefile
-similarity index 60%
+similarity index 56%
 rename from package/boot/uboot-envtools/Makefile
 rename to package/boot/uboot-tools/Makefile
-index f880698e9c..7469f07a71 100644
+index f880698e9c..09e56bda3b 100644
 --- a/package/boot/uboot-envtools/Makefile
 +++ b/package/boot/uboot-tools/Makefile
 @@ -7,7 +7,7 @@
@@ -97,7 +97,7 @@ index f880698e9c..7469f07a71 100644
  PKG_DISTNAME:=u-boot
  PKG_VERSION:=2019.07
  PKG_RELEASE:=1
-@@ -20,35 +20,44 @@ PKG_SOURCE_URL:=https://git.denx.de/u-boot.git
+@@ -20,42 +20,53 @@ PKG_SOURCE_URL:=https://git.denx.de/u-boot.git
  PKG_SOURCE_VERSION:=e5aee22e4be75e75a854ab64503fc80598bc2004
  PKG_MIRROR_HASH:=58c1ecaf901b6bf65c5e872b5449b642694ae5acebf61f91f0d4bc20b4c654b7
  
@@ -152,10 +152,24 @@ index f880698e9c..7469f07a71 100644
 -	mkdir -p $(PKG_BUILD_DIR)/include/generated
 -	touch $(PKG_BUILD_DIR)/include/generated/autoconf.h
 +	$(call Build/Compile/Default,tools-only_defconfig)
++endef
++
++define Build/Compile
++	$(call Build/Compile/Default, \
++		CROSS_COMPILE="$(TARGET_CROSS)" \
++		CROSS_BUILD_TOOLS=y \
++		envtools tools-only)
  endef
  
- MAKE_FLAGS += \
-@@ -75,4 +84,18 @@ define Package/uboot-envtools/install
+-MAKE_FLAGS += \
+-	TARGET_CFLAGS="$(TARGET_CFLAGS)" \
+-	TARGET_LDFLAGS="$(TARGET_LDFLAGS)" \
+-	no-dot-config-targets=envtools \
+-	envtools
+ 
+ define Package/uboot-envtools/conffiles
+ /etc/config/ubootenv
+@@ -75,4 +86,18 @@ define Package/uboot-envtools/install
  	)
  endef
  
@@ -243,5 +257,5 @@ similarity index 100%
 rename from package/boot/uboot-envtools/files/uboot-envtools.sh
 rename to package/boot/uboot-tools/files/uboot-envtools.sh
 -- 
-2.20.1
+2.24.0
 
