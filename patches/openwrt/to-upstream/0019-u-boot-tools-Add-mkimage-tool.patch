@@ -19,8 +19,8 @@ configuration used in this package.
 
 Signed-off-by: Karel Kočí <karel.koci@nic.cz>
 ---
- .../uboot-envtools/patches/001-compile.patch  | 13 ----
- .../{uboot-envtools => uboot-tools}/Makefile  | 63 ++++++++++++-------
+ .../uboot-envtools/patches/001-compile.patch  | 16 ------
+ .../{uboot-envtools => uboot-tools}/Makefile  | 51 ++++++++++++++-----
  .../files/apm821xx                            |  0
  .../files/ar71xx                              |  0
  .../files/ath79                               |  0
@@ -38,9 +38,9 @@ Signed-off-by: Karel Kočí <karel.koci@nic.cz>
  .../files/pistachio                           |  0
  .../files/ramips                              |  0
  .../files/uboot-envtools.sh                   |  0
- 19 files changed, 41 insertions(+), 35 deletions(-)
+ 19 files changed, 37 insertions(+), 30 deletions(-)
  delete mode 100644 package/boot/uboot-envtools/patches/001-compile.patch
- rename package/boot/{uboot-envtools => uboot-tools}/Makefile (56%)
+ rename package/boot/{uboot-envtools => uboot-tools}/Makefile (60%)
  rename package/boot/{uboot-envtools => uboot-tools}/files/apm821xx (100%)
  rename package/boot/{uboot-envtools => uboot-tools}/files/ar71xx (100%)
  rename package/boot/{uboot-envtools => uboot-tools}/files/ath79 (100%)
@@ -61,37 +61,33 @@ Signed-off-by: Karel Kočí <karel.koci@nic.cz>
 
 diff --git a/package/boot/uboot-envtools/patches/001-compile.patch b/package/boot/uboot-envtools/patches/001-compile.patch
 deleted file mode 100644
-index 34072f3..0000000
+index 5413aa4a41..0000000000
 --- a/package/boot/uboot-envtools/patches/001-compile.patch
 +++ /dev/null
-@@ -1,13 +0,0 @@
+@@ -1,16 +0,0 @@
 ---- a/tools/env/Makefile
 -+++ b/tools/env/Makefile
--@@ -8,6 +8,10 @@
+-@@ -8,6 +8,13 @@
 - # with "CC" here for the maximum code reuse of scripts/Makefile.host.
 - override HOSTCC = $(CC)
 - 
 -+ifneq ($(TARGET_CFLAGS),)
 -+HOSTCFLAGS = $(TARGET_CFLAGS)
 -+endif
+-+ifneq ($(TARGET_LDFLAGS),)
+-+HOSTLDFLAGS = $(TARGET_LDFLAGS)
+-+endif
 -+
 - # Compile for a hosted environment on the target
 - HOST_EXTRACFLAGS  = -I$(srctree)/tools \
 - 		$(patsubst -I%,-idirafter%, $(filter -I%, $(UBOOTINCLUDE))) \
 diff --git a/package/boot/uboot-envtools/Makefile b/package/boot/uboot-tools/Makefile
-similarity index 56%
+similarity index 60%
 rename from package/boot/uboot-envtools/Makefile
 rename to package/boot/uboot-tools/Makefile
-index 4be043d..773bf3a 100644
+index f880698e9c..7469f07a71 100644
 --- a/package/boot/uboot-envtools/Makefile
 +++ b/package/boot/uboot-tools/Makefile
-@@ -1,5 +1,5 @@
- #
--# Copyright (C) 2006-2014 OpenWrt.org
-+# Copyright (C) 2006-2019 OpenWrt.org
- #
- # This is free software, licensed under the GNU General Public License v2.
- # See /LICENSE for more information.
 @@ -7,7 +7,7 @@
  
  include $(TOPDIR)/rules.mk
@@ -101,7 +97,7 @@ index 4be043d..773bf3a 100644
  PKG_DISTNAME:=u-boot
  PKG_VERSION:=2019.07
  PKG_RELEASE:=1
-@@ -20,46 +20,51 @@ PKG_SOURCE_URL:=https://git.denx.de/u-boot.git
+@@ -20,35 +20,44 @@ PKG_SOURCE_URL:=https://git.denx.de/u-boot.git
  PKG_SOURCE_VERSION:=e5aee22e4be75e75a854ab64503fc80598bc2004
  PKG_MIRROR_HASH:=58c1ecaf901b6bf65c5e872b5449b642694ae5acebf61f91f0d4bc20b4c654b7
  
@@ -134,20 +130,13 @@ index 4be043d..773bf3a 100644
   This package includes tools to read and modify U-Boot bootloader environment.
  endef
  
--define Build/Configure
--	touch $(PKG_BUILD_DIR)/include/config.h
--	mkdir -p $(PKG_BUILD_DIR)/include/config
--	touch $(PKG_BUILD_DIR)/include/config/auto.conf
--	mkdir -p $(PKG_BUILD_DIR)/include/generated
--	touch $(PKG_BUILD_DIR)/include/generated/autoconf.h
 +define Package/uboot-tools
 +  $(call Package/Common)
 +  TITLE:=U-Boot tools for image creation and more
 +  DEPENDS:=+libopenssl
 +  PROVIDES:=uboot-mkimage
- endef
- 
--TARGET_CFLAGS += -I$(STAGING_DIR)/usr/include
++endef
++
 +define Package/uboot-envtools/description
 + This package includes tools to create U-Boot bootloader images.
 +endef
@@ -156,24 +145,17 @@ index 4be043d..773bf3a 100644
 +ARCH="arm"
 +endif
 +
-+define Build/Configure
+ define Build/Configure
+-	touch $(PKG_BUILD_DIR)/include/config.h
+-	mkdir -p $(PKG_BUILD_DIR)/include/config
+-	touch $(PKG_BUILD_DIR)/include/config/auto.conf
+-	mkdir -p $(PKG_BUILD_DIR)/include/generated
+-	touch $(PKG_BUILD_DIR)/include/generated/autoconf.h
 +	$(call Build/Compile/Default,tools-only_defconfig)
-+endef
- 
- define Build/Compile
--	$(MAKE) -C $(PKG_BUILD_DIR) \
-+	$(call Build/Compile/Default, \
- 		CROSS_COMPILE="$(TARGET_CROSS)" \
--		TARGET_CFLAGS="$(TARGET_CFLAGS)" \
--		HOSTLDFLAGS= \
--		no-dot-config-targets=envtools \
--		envtools
-+		CROSS_BUILD_TOOLS=y \
-+		envtools tools-only)
  endef
  
- define Package/uboot-envtools/conffiles
-@@ -80,4 +85,18 @@ define Package/uboot-envtools/install
+ MAKE_FLAGS += \
+@@ -75,4 +84,18 @@ define Package/uboot-envtools/install
  	)
  endef
  
@@ -261,5 +243,5 @@ similarity index 100%
 rename from package/boot/uboot-envtools/files/uboot-envtools.sh
 rename to package/boot/uboot-tools/files/uboot-envtools.sh
 -- 
-2.23.0
+2.20.1
 
