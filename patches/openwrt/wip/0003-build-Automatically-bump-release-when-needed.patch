@@ -1,4 +1,4 @@
-From a369c4e248977291564eadbde9e5d92eda13b383 Mon Sep 17 00:00:00 2001
+From ad329d92e0847bbe8b22433442fd4a4a0158369a Mon Sep 17 00:00:00 2001
 From: Michal Hrusecky <michal.hrusecky@nic.cz>
 Date: Wed, 31 Oct 2018 13:14:23 +0100
 Subject: [PATCH] build: Automatically bump release when needed
@@ -16,10 +16,10 @@ Signed-off-by: Michal Hrusecky <michal.hrusecky@nic.cz>
  5 files changed, 47 insertions(+), 2 deletions(-)
 
 diff --git a/config/Config-build.in b/config/Config-build.in
-index 5132497..c48fcd9 100644
+index 3534183..58441ba 100644
 --- a/config/Config-build.in
 +++ b/config/Config-build.in
-@@ -190,6 +190,22 @@ menu "Global build settings"
+@@ -194,6 +194,22 @@ menu "Global build settings"
  			bool "libstdc++"
  	endchoice
  
@@ -43,18 +43,18 @@ index 5132497..c48fcd9 100644
  
  	config PKG_CHECK_FORMAT_SECURITY
 diff --git a/include/kernel.mk b/include/kernel.mk
-index 975cf45..68084fa 100644
+index 93be63d..96f6e43 100644
 --- a/include/kernel.mk
 +++ b/include/kernel.mk
-@@ -208,7 +208,7 @@ define KernelPackage
-     SECTION:=kernel
+@@ -209,7 +209,7 @@ define KernelPackage
      CATEGORY:=Kernel modules
      DESCRIPTION:=$(DESCRIPTION)
+     VERSION:=$(LINUX_VERSION)$(if $(PKG_VERSION),+$(PKG_VERSION))-$(if $(PKG_RELEASE),$(PKG_RELEASE),$(LINUX_RELEASE))-$(LINUX_VERMAGIC)
 -    EXTRA_DEPENDS:=kernel (=$(LINUX_VERSION)-$(LINUX_RELEASE)-$(LINUX_VERMAGIC))
 +    EXTRA_DEPENDS:=kernel (=$(LINUX_VERSION)-$(LINUX_RELEASE)-$(LINUX_VERMAGIC).0)
-     VERSION:=$(LINUX_VERSION)$(if $(PKG_VERSION),+$(PKG_VERSION))-$(if $(PKG_RELEASE),$(PKG_RELEASE),$(LINUX_RELEASE))
      PKGFLAGS:=$(PKGFLAGS)
      $(call KernelPackage/$(1))
+     $(call KernelPackage/$(1)/$(BOARD))
 diff --git a/include/package-defaults.mk b/include/package-defaults.mk
 index 31e331b..19b5e6f 100644
 --- a/include/package-defaults.mk
@@ -136,5 +136,5 @@ index 80cb3d6..b0a653f 100644
  BUILD_DIR_HOST:=$(if $(IS_PACKAGE_BUILD),$(BUILD_DIR_BASE)/hostpkg,$(BUILD_DIR_BASE)/host)
  STAGING_DIR_HOST:=$(TOPDIR)/staging_dir/host
 -- 
-2.22.0
+2.24.0
 
