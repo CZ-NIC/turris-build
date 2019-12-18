@@ -36,8 +36,8 @@ index 7182882..a823305 100644
    CATEGORY:=Administration
    TITLE:=A powerful syslog daemon
    URL:=https://www.syslog-ng.com/products/open-source-log-management/
--  DEPENDS:=+libpcre +glib2 +libopenssl +libpthread +librt +zlib +libdbi +libjson-c +libcurl +libuuid +libmaxminddb
-+  DEPENDS:=+libpcre +glib2 +libopenssl +libpthread +librt +zlib +libdbi +libjson-c +libcurl +libuuid +libmaxminddb +logrotate
+-  DEPENDS:=+libpcre +glib2 +libopenssl +libpthread +librt +zlib +libdbi +libjson-c +libcurl +libuuid
++  DEPENDS:=+libpcre +glib2 +libopenssl +libpthread +librt +zlib +libdbi +libjson-c +libcurl +libuuid +logrotate
  endef
  
  define Package/syslog-ng/description
