@@ -1,0 +1,26 @@
+From c6719d9632b806387066a6bcc5af831e78351195 Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Sat, 21 Dec 2019 11:56:52 +0100
+Subject: [PATCH] iputils: dont build with ccache
+
+---
+ net/iputils/Makefile | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/net/iputils/Makefile b/net/iputils/Makefile
+index 4ca98b39e..6efc7da0d 100644
+--- a/net/iputils/Makefile
++++ b/net/iputils/Makefile
+@@ -143,6 +143,9 @@ define Package/iputils-tftpd/install
+ 	$(INSTALL_BIN) $(MESON_BUILD_DIR)/tftpd $(1)/usr/bin/
+ endef
+ 
++HOSTCC=$(HOSTCC_NOCACHE)
++HOSTCXX=$(HOSTCXX_NOCACHE)
++
+ $(eval $(call BuildPackage,iputils-ping))
+ $(eval $(call BuildPackage,iputils-arping))
+ $(eval $(call BuildPackage,iputils-clockdiff))
+-- 
+2.24.1
+
