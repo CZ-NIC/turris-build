@@ -1,0 +1,39 @@
+From 262638fb7f6a32a6bdc3fa66756c60eed276692b Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Sat, 28 Dec 2019 10:13:35 +0100
+Subject: [PATCH 2/3] Revert "ubus: update to version 2019-12-19"
+
+This reverts commit 7cb018c591453848a50ef7737bdbe5d90aa7a18a.
+---
+ package/system/ubus/Makefile | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/package/system/ubus/Makefile b/package/system/ubus/Makefile
+index 56e17ea83b..6653132351 100644
+--- a/package/system/ubus/Makefile
++++ b/package/system/ubus/Makefile
+@@ -5,9 +5,9 @@ PKG_RELEASE:=1
+ 
+ PKG_SOURCE_PROTO:=git
+ PKG_SOURCE_URL=$(PROJECT_GIT)/project/ubus.git
+-PKG_SOURCE_DATE:=2019-12-19
+-PKG_SOURCE_VERSION:=a1523d76b016ed46501f61e38ad38999d6c66f52
+-PKG_MIRROR_HASH:=f0d46cac85d60e24e3f835c729ee17bb29f0e75c8bd831a86fb3456debd9ad62
++PKG_SOURCE_DATE:=2018-10-06
++PKG_SOURCE_VERSION:=221ce7e7ff1bd1a0c9995fa9d32f58e865f7207f
++PKG_MIRROR_HASH:=e6ab3f009688740eb6d7a1857df59a6ba10ae8ae0fac78ae0fd6672f71c02dce
+ CMAKE_INSTALL:=1
+ 
+ PKG_LICENSE:=LGPL-2.1
+@@ -36,7 +36,7 @@ define Package/libubus
+   SECTION:=libs
+   CATEGORY:=Libraries
+   DEPENDS:=+libubox
+-  ABI_VERSION:=20191219
++  ABI_VERSION:=20170705
+   TITLE:=OpenWrt RPC client library
+ endef
+ 
+-- 
+2.24.1
+

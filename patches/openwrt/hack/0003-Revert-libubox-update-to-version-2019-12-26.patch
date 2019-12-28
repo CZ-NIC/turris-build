@@ -1,0 +1,39 @@
+From de169f140245ade511bc32c55e5592170323641e Mon Sep 17 00:00:00 2001
+From: Josef Schlehofer <pepe.schlehofer@gmail.com>
+Date: Sat, 28 Dec 2019 10:13:43 +0100
+Subject: [PATCH 3/3] Revert "libubox: update to version 2019-12-26"
+
+This reverts commit b9f3af7c890e76baa9869f51384c0dbd96c3b704.
+---
+ package/libs/libubox/Makefile | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/package/libs/libubox/Makefile b/package/libs/libubox/Makefile
+index 0e3a433806..d0009ab3de 100644
+--- a/package/libs/libubox/Makefile
++++ b/package/libs/libubox/Makefile
+@@ -5,9 +5,9 @@ PKG_RELEASE=1
+ 
+ PKG_SOURCE_PROTO:=git
+ PKG_SOURCE_URL=$(PROJECT_GIT)/project/libubox.git
+-PKG_MIRROR_HASH:=8072cf0ca0b4de23ad91bffae95a1e3a243ca2e4736e114992d5a7ebc2185235
+-PKG_SOURCE_DATE:=2019-12-26
+-PKG_SOURCE_VERSION:=eb7eb6393d47a918c420f5b287946dbd6c0d5f57
++PKG_MIRROR_HASH:=e7ef39ffe693d6f106aa320268d90a68aebd0a0aa1baa0051d70b3bb1f8a64fc
++PKG_SOURCE_DATE:=2019-11-24
++PKG_SOURCE_VERSION:=07413cce72e19520af55dfcbc765484f5ab41dd9
+ CMAKE_INSTALL:=1
+ 
+ PKG_LICENSE:=ISC
+@@ -27,7 +27,7 @@ define Package/libubox
+   SECTION:=libs
+   CATEGORY:=Libraries
+   TITLE:=Basic utility library
+-  ABI_VERSION:=20191226
++  ABI_VERSION:=20170601
+   DEPENDS:=
+ endef
+ 
+-- 
+2.24.1
+
