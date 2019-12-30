@@ -1,7 +1,7 @@
-From c02e954224400be696b518dfed27deb81df82aaa Mon Sep 17 00:00:00 2001
+From 262638fb7f6a32a6bdc3fa66756c60eed276692b Mon Sep 17 00:00:00 2001
 From: Josef Schlehofer <pepe.schlehofer@gmail.com>
 Date: Sat, 28 Dec 2019 10:13:35 +0100
-Subject: [PATCH 2/4] Revert "ubus: update to version 2019-12-19"
+Subject: [PATCH 2/3] Revert "ubus: update to version 2019-12-19"
 
 This reverts commit 7cb018c591453848a50ef7737bdbe5d90aa7a18a.
 ---

@@ -1,7 +1,7 @@
-From 55e761fddaaa1a505ba9ce444efa3922f5d7d0a7 Mon Sep 17 00:00:00 2001
+From de169f140245ade511bc32c55e5592170323641e Mon Sep 17 00:00:00 2001
 From: Josef Schlehofer <pepe.schlehofer@gmail.com>
-Date: Sat, 28 Dec 2019 23:33:15 +0100
-Subject: [PATCH 4/4] Revert "libubox: update to version 2019-12-26"
+Date: Sat, 28 Dec 2019 10:13:43 +0100
+Subject: [PATCH 3/3] Revert "libubox: update to version 2019-12-26"
 
 This reverts commit b9f3af7c890e76baa9869f51384c0dbd96c3b704.
 ---
