@@ -1,0 +1,62 @@
+From bb99b9980d47a479bf999337efb3d5e98debe3cb Mon Sep 17 00:00:00 2001
+From: Ben Kochie <superq@gmail.com>
+Date: Mon, 6 Apr 2020 10:23:41 +0200
+Subject: [PATCH] target/linux/generic: Don't use CONFIG_PROC_STRIPPED
+
+Re-enable some `/proc` files disabled by default in OpenWRT[0]. This
+enables several usefule proc files like `/proc/net/netstat` and
+`/proc/net/snmp`.
+
+See: https://github.com/CZ-NIC/turris-build/pull/4
+
+[0]: https://git.openwrt.org/?p=openwrt/openwrt.git;a=blob;f=target/linux/generic/hack-4.14/902-debloat_proc.patch;h=c5f6397be1443db0130210b6685eccc77200a296;hb=refs/tags/v19.07.2
+
+Signed-off-by: Ben Kochie <superq@gmail.com>
+---
+ target/linux/generic/config-4.14 | 2 +-
+ target/linux/generic/config-4.19 | 2 +-
+ target/linux/generic/config-5.4  | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/target/linux/generic/config-4.14 b/target/linux/generic/config-4.14
+index e42139744a..a4434c13c5 100644
+--- a/target/linux/generic/config-4.14
++++ b/target/linux/generic/config-4.14
+@@ -3656,7 +3656,7 @@ CONFIG_PRINT_STACK_DEPTH=64
+ CONFIG_PROC_FS=y
+ # CONFIG_PROC_KCORE is not set
+ # CONFIG_PROC_PAGE_MONITOR is not set
+-CONFIG_PROC_STRIPPED=y
++# CONFIG_PROC_STRIPPED is not set
+ CONFIG_PROC_SYSCTL=y
+ # CONFIG_PROFILE_ALL_BRANCHES is not set
+ # CONFIG_PROFILE_ANNOTATED_BRANCHES is not set
+diff --git a/target/linux/generic/config-4.19 b/target/linux/generic/config-4.19
+index 32209674ba..d710f4fabb 100644
+--- a/target/linux/generic/config-4.19
++++ b/target/linux/generic/config-4.19
+@@ -3865,7 +3865,7 @@ CONFIG_PRINT_STACK_DEPTH=64
+ CONFIG_PROC_FS=y
+ # CONFIG_PROC_KCORE is not set
+ # CONFIG_PROC_PAGE_MONITOR is not set
+-CONFIG_PROC_STRIPPED=y
++# CONFIG_PROC_STRIPPED is not set
+ CONFIG_PROC_SYSCTL=y
+ # CONFIG_PROC_VMCORE_DEVICE_DUMP is not set
+ # CONFIG_PROFILE_ALL_BRANCHES is not set
+diff --git a/target/linux/generic/config-5.4 b/target/linux/generic/config-5.4
+index b5deef31de..237f2f079f 100644
+--- a/target/linux/generic/config-5.4
++++ b/target/linux/generic/config-5.4
+@@ -4114,7 +4114,7 @@ CONFIG_PRINT_STACK_DEPTH=64
+ CONFIG_PROC_FS=y
+ # CONFIG_PROC_KCORE is not set
+ # CONFIG_PROC_PAGE_MONITOR is not set
+-CONFIG_PROC_STRIPPED=y
++# CONFIG_PROC_STRIPPED is not set
+ CONFIG_PROC_SYSCTL=y
+ # CONFIG_PROC_VMCORE_DEVICE_DUMP is not set
+ # CONFIG_PROFILE_ALL_BRANCHES is not set
+-- 
+2.17.1
+
